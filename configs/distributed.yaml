@@ -1,0 +1,132 @@
+# Distributed Architecture Configuration
+# Фаза 5: Node Management, Mesh Networking, Automatic Failover
+
+# Node Manager Configuration
+node_manager:
+  node_id: "node-1"
+  listen_address: "0.0.0.0"
+  listen_port: 8081
+  heartbeat_interval: 10s
+  health_check_interval: 30s
+  election_timeout: 30s
+  max_nodes: 50
+  enable_tls: false
+  tls_config:
+    cert_file: ""
+    key_file: ""
+    ca_file: ""
+
+# Mesh Network Configuration
+mesh_network:
+  node_id: "node-1"
+  listen_port: 8082
+  broadcast_port: 8083
+  discovery_port: 8084
+  max_peers: 100
+  heartbeat_interval: 30s
+  enable_encryption: true
+  encryption_type: "aes256"
+  auto_connect: true
+  route_timeout: 60s
+
+# Failover Configuration
+failover:
+  enabled: true
+  health_check_interval: 30s
+  failure_threshold: 3
+  recovery_threshold: 2
+  failover_timeout: 60s
+  max_failover_attempts: 3
+  enable_graceful_failover: true
+  graceful_timeout: 30s
+  auto_recovery: true
+  recovery_interval: 60s
+
+# Node Monitoring Configuration
+node_monitoring:
+  enabled: true
+  collect_interval: 30s
+  retention_period: 24h
+  alerting_enabled: true
+  dashboard_enabled: true
+  dashboard_port: 8085
+  metrics_buffer_size: 1000
+  enable_auto_scaling: false
+  scaling_threshold: 80.0
+
+# Integration Configuration
+integration:
+  auto_start: true
+  health_check_interval: 30s
+  metrics_aggregation: true
+  cross_node_optimization: true
+  enable_auto_scaling: false
+  load_balancing_strategy: "round_robin"
+
+# Alert Rules for Distributed Components
+distributed_alerts:
+  - name: "Node Down"
+    metric: "node_status"
+    condition: "=="
+    threshold: 0  # Failed status
+    duration: 30s
+    severity: "critical"
+    enabled: true
+    
+  - name: "High Node CPU Usage"
+    metric: "node_cpu_usage"
+    condition: ">"
+    threshold: 85.0
+    duration: 2m
+    severity: "warning"
+    enabled: true
+    
+  - name: "Mesh Network Partition"
+    metric: "mesh_connected_peers"
+    condition: "<"
+    threshold: 2
+    duration: 1m
+    severity: "critical"
+    enabled: true
+    
+  - name: "Failover Rate High"
+    metric: "failover_rate"
+    condition: ">"
+    threshold: 0.1  # 10%
+    duration: 5m
+    severity: "warning"
+    enabled: true
+
+# Cluster Configuration
+cluster:
+  name: "socks5-dpi-cluster"
+  region: "default"
+  zone: "primary"
+  enable_cross_region: false
+  replication_factor: 3
+  consistency_level: "eventual"
+
+# Load Balancing Configuration
+load_balancing:
+  strategy: "weighted_round_robin"
+  health_check_interval: 15s
+  sticky_sessions: false
+  session_affinity: false
+  connection_draining: true
+  drain_timeout: 30s
+
+# Security Configuration
+security:
+  enable_encryption: true
+  encryption_algorithm: "AES-256-GCM"
+  key_rotation_interval: 24h
+  certificate_validation: true
+  mutual_tls: false
+
+# Performance Targets
+performance_targets:
+  max_node_latency: 100ms
+  min_mesh_throughput: 1000
+  max_failover_time: 30s
+  min_cluster_availability: 99.9
+  max_error_rate: 0.01  # 1%
