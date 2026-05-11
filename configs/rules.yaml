@@ -1,5 +1,32 @@
 # DPI bypass rules configuration
 rules:
+  # VLESS protocol for heavily filtered sites
+  - domain: "*.youtube.com"
+    port: 443
+    pipeline:
+      vless_client:
+        server: "vless.example.com"
+        port: 443
+        uuid: "12345678-1234-1234-1234-123456789abc"
+        flow: "xtls-rprx-vision"
+        encryption: "none"
+        transport:
+          type: "websocket"
+          websocket:
+            path: "/api/v1/stream"
+            host: "example.com"
+            headers:
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        tls:
+          min_version: "1.3"
+          cipher_suites:
+            - "TLS_AES_128_GCM_SHA256"
+            - "TLS_AES_256_GCM_SHA384"
+            - "TLS_CHACHA20_POLY1305_SHA256"
+          server_name: "example.com"
+        reality:
+          enabled: false
+
   # Aggressive bypass for heavily filtered sites
   - domain: "*.twitter.com"
     port: 443

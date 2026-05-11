@@ -95,6 +95,8 @@ func (e *Engine) createModifierInstance(name string) Modifier {
 		return &ProtocolMaskModifier{}
 	case "behavioral_evasion":
 		return &BehavioralEvasionModifier{}
+	case "vless_client":
+		return NewVLESSModifier()
 	default:
 		return nil
 	}
