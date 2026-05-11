@@ -687,7 +687,7 @@
           "error_rate": 0.01
         },
         "environment": "Standard test environment",
-        "last_run": "2026-05-12T02:25:48.732438+03:00"
+        "last_run": "2026-05-12T02:41:22.611759+03:00"
       },
       {
         "name": "Data Throughput",
@@ -700,7 +700,7 @@
           "error_rate": 0.001
         },
         "environment": "High-performance test environment",
-        "last_run": "2026-05-12T02:25:48.732438+03:00"
+        "last_run": "2026-05-12T02:41:22.611759+03:00"
       }
     ],
     "optimizations": [
@@ -1406,6 +1406,6 @@
       "Level 4: Emergency response"
     ]
   },
-  "generated_at": "2026-05-12T02:25:48.732459+03:00",
+  "generated_at": "2026-05-12T02:41:22.611792+03:00",
   "version": "1.0.0"
 }
