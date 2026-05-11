@@ -16,21 +16,21 @@ func main() {
 	// Create final configuration
 	config := &final.FinalConfig{
 		Core: &final.CoreConfig{
-			ListenAddress:   "0.0.0.0",
-			ListenPort:      1080,
-			MaxConnections:  10000,
-			Timeout:         30 * time.Second,
-			EnableLogging:   true,
-			LogLevel:        "info",
+			ListenAddress:  "0.0.0.0",
+			ListenPort:     1080,
+			MaxConnections: 10000,
+			Timeout:        30 * time.Second,
+			EnableLogging:  true,
+			LogLevel:       "info",
 		},
 		Integration: &final.IntegrationConfig{
-			AutoStart:              true,
-			HealthCheckInterval:   30 * time.Second,
-			MetricsAggregation:     true,
+			AutoStart:                  true,
+			HealthCheckInterval:        30 * time.Second,
+			MetricsAggregation:         true,
 			CrossComponentOptimization: true,
-			EnableFailover:         true,
-			EnableLoadBalancing:    true,
-			EnableAutoScaling:      false,
+			EnableFailover:             true,
+			EnableLoadBalancing:        true,
+			EnableAutoScaling:          false,
 		},
 	}
 
@@ -39,12 +39,12 @@ func main() {
 
 	// Create test manager
 	testConfig := &final.TestConfig{
-		EnabledSuites: []string{"unit", "integration"},
-		Timeout:       10 * time.Minute,
-		ParallelTests: 2,
-		Retries:       1,
+		EnabledSuites:   []string{"unit", "integration"},
+		Timeout:         10 * time.Minute,
+		ParallelTests:   2,
+		Retries:         1,
 		GenerateReports: true,
-		OutputPath:    "./test-results",
+		OutputPath:      "./test-results",
 	}
 	testManager := final.NewTestManager(finalManager, testConfig)
 
@@ -59,10 +59,10 @@ func main() {
 			Port:        1080,
 		},
 		HealthCheck: &final.HealthCheckConfig{
-			Enabled:   true,
-			Interval:  30 * time.Second,
-			Timeout:   10 * time.Second,
-			Retries:   3,
+			Enabled:  true,
+			Interval: 30 * time.Second,
+			Timeout:  10 * time.Second,
+			Retries:  3,
 			Endpoints: []string{
 				"http://localhost:8080/health",
 				"http://localhost:8085/metrics",
@@ -112,7 +112,7 @@ func main() {
 
 	// Start the system
 	log.Println("Starting SOCKS5 DPI Proxy System...")
-	
+
 	if err := finalManager.Start(ctx); err != nil {
 		log.Fatalf("Failed to start final manager: %v", err)
 	}
@@ -155,7 +155,7 @@ func main() {
 // printSystemStatus prints current system status
 func printSystemStatus(manager *final.FinalManager) {
 	fmt.Println("\n=== SOCKS5 DPI Proxy System Status ===")
-	
+
 	// Check if running
 	if manager.IsRunning() {
 		fmt.Println("✅ Status: Running")
@@ -166,7 +166,7 @@ func printSystemStatus(manager *final.FinalManager) {
 	// Get health status
 	health := manager.GetHealth()
 	fmt.Printf("📊 Component Health: %d/%d healthy\n", countHealthy(health), len(health))
-	
+
 	for component, healthy := range health {
 		status := "❌"
 		if healthy {
@@ -178,12 +178,16 @@ func printSystemStatus(manager *final.FinalManager) {
 	// Get metrics
 	metrics := manager.GetMetrics()
 	if metrics != nil {
-		fmt.Printf("🔗 Connections: %d active, %d total\n", 
-			metrics.Connections.ActiveConnections, 
-			metrics.Connections.TotalConnections)
-		fmt.Printf("📈 System Resources: CPU %.1f%%, Memory %.1f%%\n", 
-			metrics.System.CPUUsage, 
-			metrics.System.MemoryUsage)
+		if metrics.Connections != nil {
+			fmt.Printf("🔗 Connections: %d active, %d total\n",
+				metrics.Connections.ActiveConnections,
+				metrics.Connections.TotalConnections)
+		}
+		if metrics.System != nil {
+			fmt.Printf("📈 System Resources: CPU %.1f%%, Memory %.1f%%\n",
+				metrics.System.CPUUsage,
+				metrics.System.MemoryUsage)
+		}
 	}
 
 	fmt.Println("=====================================\n")

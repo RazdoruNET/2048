@@ -1,0 +1,1411 @@
+{
+  "overview": {
+    "title": "SOCKS5 DPI Proxy System",
+    "description": "Advanced SOCKS5 proxy with DPI evasion, performance optimization, and distributed architecture",
+    "version": "1.0.0",
+    "build_date": "2026-05-12",
+    "authors": [
+      "Development Team"
+    ],
+    "license": "MIT",
+    "features": [
+      "Advanced DPI evasion techniques",
+      "Multiple protocol support (VLESS, Hysteria2, TUIC)",
+      "Performance optimization and monitoring",
+      "Distributed architecture with failover",
+      "Behavioral evasion with ML optimization",
+      "Comprehensive testing and deployment automation"
+    ],
+    "requirements": [
+      "Go 1.19+",
+      "Linux/Unix system",
+      "Network access",
+      "Sufficient memory and CPU resources"
+    ],
+    "quick_start": {
+      "installation": [
+        "Download the binary or build from source",
+        "Install dependencies",
+        "Configure system settings"
+      ],
+      "configuration": [
+        "Edit configuration files",
+        "Set up protocols and ports",
+        "Configure monitoring and logging"
+      ],
+      "running": [
+        "Start the proxy service",
+        "Verify system health",
+        "Monitor performance metrics"
+      ],
+      "verification": [
+        "Test connection establishment",
+        "Verify DPI evasion capabilities",
+        "Check performance benchmarks"
+      ]
+    }
+  },
+  "architecture": {
+    "components": [
+      {
+        "name": "Proxy Server",
+        "type": "Core",
+        "description": "Main SOCKS5 proxy server handling client connections",
+        "responsibilities": [
+          "Accept client connections",
+          "Route traffic through protocols",
+          "Manage connection lifecycle"
+        ],
+        "interfaces": [
+          "SOCKS5",
+          "HTTP",
+          "WebSocket"
+        ],
+        "dependencies": [
+          "Pipeline Engine",
+          "Performance Manager"
+        ],
+        "configuration": null,
+        "metrics": [
+          "connections",
+          "throughput",
+          "latency"
+        ]
+      },
+      {
+        "name": "Pipeline Engine",
+        "type": "Processing",
+        "description": "Data processing pipeline with modifiers and transformations",
+        "responsibilities": [
+          "Apply protocol modifiers",
+          "Process data transformations",
+          "Coordinate component interactions"
+        ],
+        "interfaces": [
+          "Modifier Interface",
+          "Data Pipeline"
+        ],
+        "dependencies": [
+          "Behavioral System",
+          "Protocol Handlers"
+        ],
+        "configuration": null,
+        "metrics": [
+          "processing_time",
+          "modifier_success_rate"
+        ]
+      },
+      {
+        "name": "Performance Manager",
+        "type": "Optimization",
+        "description": "Performance optimization and resource management",
+        "responsibilities": [
+          "Connection pooling",
+          "Load balancing",
+          "Resource optimization",
+          "Performance monitoring"
+        ],
+        "interfaces": [
+          "Pool Interface",
+          "Balancer Interface"
+        ],
+        "dependencies": [
+          "System Resources",
+          "Monitoring"
+        ],
+        "configuration": null,
+        "metrics": [
+          "pool_hit_rate",
+          "balancer_efficiency",
+          "resource_usage"
+        ]
+      },
+      {
+        "name": "Distributed Manager",
+        "type": "Coordination",
+        "description": "Distributed architecture coordination and failover",
+        "responsibilities": [
+          "Node management",
+          "Mesh networking",
+          "Automatic failover",
+          "Distributed monitoring"
+        ],
+        "interfaces": [
+          "Node Interface",
+          "Mesh Interface"
+        ],
+        "dependencies": [
+          "Node Manager",
+          "Health Monitor"
+        ],
+        "configuration": null,
+        "metrics": [
+          "node_health",
+          "mesh_connectivity",
+          "failover_rate"
+        ]
+      }
+    ],
+    "data_flow": {
+      "description": "Data flows through a series of processing stages from client to target",
+      "flow_diagram": "client -\u003e proxy_server -\u003e pipeline_engine -\u003e protocols -\u003e network",
+      "stages": [
+        {
+          "name": "Connection Accept",
+          "description": "Accept and validate client connections",
+          "input": "SOCKS5 connection request",
+          "output": "Authenticated connection",
+          "processing_time": "\u003c 1ms",
+          "optimizations": [
+            "Connection pooling",
+            "Fast authentication"
+          ]
+        },
+        {
+          "name": "Protocol Selection",
+          "description": "Select optimal protocol for traffic",
+          "input": "Connection metadata",
+          "output": "Selected protocol",
+          "processing_time": "\u003c 0.5ms",
+          "optimizations": [
+            "Protocol caching",
+            "Smart selection"
+          ]
+        },
+        {
+          "name": "Data Processing",
+          "description": "Apply transformations and optimizations",
+          "input": "Raw data",
+          "output": "Processed data",
+          "processing_time": "\u003c 2ms",
+          "optimizations": [
+            "Pipeline optimization",
+            "Parallel processing"
+          ]
+        },
+        {
+          "name": "Network Transmission",
+          "description": "Transmit data through selected protocol",
+          "input": "Processed data",
+          "output": "Network packets",
+          "processing_time": "Variable",
+          "optimizations": [
+            "Protocol optimization",
+            "Compression"
+          ]
+        }
+      ],
+      "optimizations": [
+        "Connection reuse",
+        "Protocol caching",
+        "Parallel processing",
+        "Memory pooling"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "Go Runtime",
+        "version": "1.19+",
+        "type": "Runtime",
+        "description": "Go programming language runtime",
+        "required": true,
+        "alternatives": []
+      },
+      {
+        "name": "Network Stack",
+        "version": "System",
+        "type": "System",
+        "description": "Operating system network stack",
+        "required": true,
+        "alternatives": []
+      }
+    ],
+    "design_patterns": [
+      "Pipeline Pattern",
+      "Strategy Pattern",
+      "Observer Pattern",
+      "Factory Pattern",
+      "Singleton Pattern"
+    ],
+    "scalability": {
+      "horizontal_scale": true,
+      "vertical_scale": true,
+      "max_connections": 10000,
+      "max_throughput": "1Gbps",
+      "load_balancing": [
+        "Round Robin",
+        "Weighted",
+        "Least Connections"
+      ],
+      "auto_scaling": [
+        "CPU-based",
+        "Connection-based",
+        "Latency-based"
+      ]
+    },
+    "security": {
+      "encryption": [
+        "AES-256-GCM",
+        "ChaCha20-Poly1305"
+      ],
+      "authentication": [
+        "TLS",
+        "mTLS"
+      ],
+      "authorization": [
+        "RBAC",
+        "ABAC"
+      ],
+      "obfuscation": [
+        "Traffic Obfuscation",
+        "Protocol Mimicry"
+      ],
+      "threats": [
+        "DPI Detection",
+        "Traffic Analysis",
+        "Protocol Fingerprinting"
+      ],
+      "mitigations": [
+        "Behavioral Evasion",
+        "Protocol Rotation",
+        "Traffic Shaping"
+      ]
+    }
+  },
+  "configuration": {
+    "core_config": {
+      "name": "Core Configuration",
+      "description": "Main system configuration settings",
+      "parameters": [
+        {
+          "name": "listen_address",
+          "type": "string",
+          "description": "IP address to listen on",
+          "default": "0.0.0.0",
+          "required": true,
+          "range": "valid IP address",
+          "constraints": [
+            "Must be valid IP address"
+          ]
+        },
+        {
+          "name": "listen_port",
+          "type": "int",
+          "description": "Port to listen on",
+          "default": 1080,
+          "required": true,
+          "range": "1-65535",
+          "constraints": [
+            "Must be valid port number"
+          ]
+        },
+        {
+          "name": "max_connections",
+          "type": "int",
+          "description": "Maximum concurrent connections",
+          "default": 10000,
+          "required": false,
+          "range": "1-100000",
+          "constraints": [
+            "Must be positive integer"
+          ]
+        }
+      ],
+      "default_values": {
+        "enable_logging": true,
+        "listen_address": "0.0.0.0",
+        "listen_port": 1080,
+        "log_level": "info",
+        "max_connections": 10000,
+        "timeout": "30s"
+      },
+      "requirements": [
+        "Valid IP address for listen_address",
+        "Available port for listen_port",
+        "Sufficient system resources for max_connections"
+      ]
+    },
+    "performance": {
+      "name": "Performance Configuration",
+      "description": "Performance optimization settings",
+      "parameters": [
+        {
+          "name": "connection_pool_size",
+          "type": "int",
+          "description": "Size of connection pool",
+          "default": 100,
+          "required": false,
+          "range": "1-10000",
+          "constraints": [
+            "Must be positive integer"
+          ]
+        },
+        {
+          "name": "load_balancing_strategy",
+          "type": "string",
+          "description": "Load balancing strategy",
+          "default": "round_robin",
+          "required": false,
+          "range": "round_robin, weighted, least_connections",
+          "constraints": [
+            "Must be valid strategy"
+          ]
+        }
+      ],
+      "default_values": {
+        "connection_pool_size": 100,
+        "enable_optimization": true,
+        "load_balancing_strategy": "round_robin",
+        "optimization_interval": "30s"
+      },
+      "requirements": [
+        "Sufficient memory for connection pools",
+        "Network bandwidth for load balancing"
+      ]
+    },
+    "distributed": {
+      "name": "Distributed Configuration",
+      "description": "Distributed architecture settings",
+      "parameters": [
+        {
+          "name": "node_id",
+          "type": "string",
+          "description": "Unique node identifier",
+          "default": "node-1",
+          "required": true,
+          "range": "valid string",
+          "constraints": [
+            "Must be unique in cluster"
+          ]
+        },
+        {
+          "name": "mesh_enabled",
+          "type": "bool",
+          "description": "Enable mesh networking",
+          "default": true,
+          "required": false,
+          "range": "true, false",
+          "constraints": []
+        }
+      ],
+      "default_values": {
+        "failover_enabled": true,
+        "mesh_enabled": true,
+        "monitoring_enabled": true,
+        "node_id": "node-1"
+      },
+      "requirements": [
+        "Unique node_id in cluster",
+        "Network connectivity for mesh"
+      ]
+    },
+    "behavioral": {
+      "name": "Behavioral Evasion Configuration",
+      "description": "DPI evasion and behavioral optimization settings",
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "bool",
+          "description": "Enable behavioral evasion",
+          "default": true,
+          "required": false,
+          "range": "true, false",
+          "constraints": []
+        },
+        {
+          "name": "evasion_level",
+          "type": "string",
+          "description": "Level of evasion techniques",
+          "default": "medium",
+          "required": false,
+          "range": "low, medium, high, maximum",
+          "constraints": [
+            "Must be valid level"
+          ]
+        }
+      ],
+      "default_values": {
+        "adaptive_timing": true,
+        "enabled": true,
+        "evasion_level": "medium",
+        "ml_optimization": true
+      },
+      "requirements": [
+        "Sufficient CPU for ML optimization",
+        "Memory for behavioral models"
+      ]
+    },
+    "examples": [
+      {
+        "name": "Basic Configuration",
+        "description": "Minimal configuration for basic usage",
+        "use_case": "Development or small deployment",
+        "configuration": {
+          "behavioral": {
+            "enabled": true,
+            "evasion_level": "low"
+          },
+          "core": {
+            "listen_address": "127.0.0.1",
+            "listen_port": 1080,
+            "max_connections": 100
+          }
+        }
+      },
+      {
+        "name": "Production Configuration",
+        "description": "Full-featured production configuration",
+        "use_case": "Large-scale production deployment",
+        "configuration": {
+          "behavioral": {
+            "adaptive_timing": true,
+            "enabled": true,
+            "evasion_level": "high",
+            "ml_optimization": true
+          },
+          "core": {
+            "enable_logging": true,
+            "listen_address": "0.0.0.0",
+            "listen_port": 1080,
+            "log_level": "info",
+            "max_connections": 10000
+          },
+          "distributed": {
+            "failover_enabled": true,
+            "mesh_enabled": true,
+            "node_id": "prod-node-1"
+          },
+          "performance": {
+            "connection_pool_size": 1000,
+            "enable_optimization": true,
+            "load_balancing_strategy": "weighted"
+          }
+        }
+      }
+    ],
+    "validation": {
+      "rules": [
+        "listen_address must be valid IP",
+        "listen_port must be in range 1-65535",
+        "max_connections must be positive",
+        "node_id must be unique in cluster"
+      ],
+      "common_errors": [
+        "Invalid IP address format",
+        "Port already in use",
+        "Insufficient system resources",
+        "Duplicate node ID in cluster"
+      ],
+      "best_practices": [
+        "Use environment variables for sensitive data",
+        "Validate configuration before startup",
+        "Monitor configuration changes",
+        "Keep configuration files secure"
+      ]
+    }
+  },
+  "api": {
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "Check system health status",
+        "parameters": [
+          {
+            "name": "verbose",
+            "type": "boolean",
+            "in": "query",
+            "description": "Include detailed health information",
+            "required": false,
+            "default": false,
+            "constraints": null
+          }
+        ],
+        "request_body": null,
+        "responses": [
+          {
+            "code": 200,
+            "description": "System is healthy",
+            "schema": {
+              "components": "object",
+              "status": "string",
+              "timestamp": "string"
+            },
+            "headers": null,
+            "example": {
+              "components": {
+                "pipeline_engine": true,
+                "proxy_server": true
+              },
+              "status": "healthy",
+              "timestamp": "2023-01-01T00:00:00Z"
+            }
+          },
+          {
+            "code": 503,
+            "description": "System is unhealthy",
+            "schema": {
+              "error": "string",
+              "status": "string",
+              "timestamp": "string"
+            },
+            "headers": null,
+            "example": {
+              "error": "Component failure",
+              "status": "unhealthy",
+              "timestamp": "2023-01-01T00:00:00Z"
+            }
+          }
+        ],
+        "examples": null
+      },
+      {
+        "method": "GET",
+        "path": "/metrics",
+        "description": "Get system performance metrics",
+        "parameters": [
+          {
+            "name": "format",
+            "type": "string",
+            "in": "query",
+            "description": "Output format (json, prometheus)",
+            "required": false,
+            "default": "json",
+            "constraints": null
+          }
+        ],
+        "request_body": null,
+        "responses": [
+          {
+            "code": 200,
+            "description": "Metrics data",
+            "schema": {
+              "connections": "object",
+              "performance": "object",
+              "system": "object",
+              "timestamp": "string"
+            },
+            "headers": null,
+            "example": null
+          }
+        ],
+        "examples": null
+      }
+    ],
+    "data_models": [
+      {
+        "name": "HealthStatus",
+        "description": "System health status model",
+        "fields": [
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Overall health status",
+            "required": true,
+            "default": null,
+            "constraints": null
+          },
+          {
+            "name": "timestamp",
+            "type": "string",
+            "description": "Timestamp of health check",
+            "required": true,
+            "default": null,
+            "constraints": null
+          },
+          {
+            "name": "components",
+            "type": "object",
+            "description": "Component health status",
+            "required": false,
+            "default": null,
+            "constraints": null
+          }
+        ],
+        "example": {
+          "components": {
+            "pipeline_engine": true,
+            "proxy_server": true
+          },
+          "status": "healthy",
+          "timestamp": "2023-01-01T00:00:00Z"
+        }
+      }
+    ],
+    "authentication": {
+      "type": "Bearer Token",
+      "description": "API authentication using bearer tokens",
+      "headers": [
+        "Authorization: Bearer \u003ctoken\u003e"
+      ],
+      "examples": [
+        "Authorization: Bearer abc123def456"
+      ]
+    },
+    "error_handling": {
+      "format": "JSON error response",
+      "codes": {
+        "400": "Bad Request",
+        "401": "Unauthorized",
+        "404": "Not Found",
+        "500": "Internal Server Error",
+        "503": "Service Unavailable"
+      },
+      "examples": [
+        "{\"error\": \"Invalid request\", \"code\": 400}",
+        "{\"error\": \"Authentication failed\", \"code\": 401}"
+      ]
+    },
+    "rate_limiting": {
+      "limits": [
+        "100 requests per minute",
+        "1000 requests per hour",
+        "10000 requests per day"
+      ],
+      "headers": [
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset"
+      ],
+      "bypass": [
+        "Health check endpoints",
+        "Internal monitoring",
+        "Emergency access"
+      ]
+    }
+  },
+  "performance": {
+    "benchmarks": [
+      {
+        "name": "Connection Establishment",
+        "description": "Time to establish new connections",
+        "results": {
+          "throughput": 1000,
+          "latency": "\u003c 5ms",
+          "cpu_usage": 10,
+          "memory_usage": 50,
+          "error_rate": 0.01
+        },
+        "environment": "Standard test environment",
+        "last_run": "2026-05-12T02:10:34.419166+03:00"
+      },
+      {
+        "name": "Data Throughput",
+        "description": "Maximum data throughput",
+        "results": {
+          "throughput": 100,
+          "latency": "\u003c 10ms",
+          "cpu_usage": 30,
+          "memory_usage": 100,
+          "error_rate": 0.001
+        },
+        "environment": "High-performance test environment",
+        "last_run": "2026-05-12T02:10:34.419166+03:00"
+      }
+    ],
+    "optimizations": [
+      "Connection pooling and reuse",
+      "Memory allocation optimization",
+      "CPU affinity and worker pools",
+      "Network I/O optimization",
+      "Garbage collection tuning"
+    ],
+    "metrics": [
+      {
+        "name": "connection_latency",
+        "description": "Time to establish connection",
+        "type": "histogram",
+        "unit": "milliseconds",
+        "labels": [
+          "protocol",
+          "region"
+        ],
+        "alerts": [
+          "high_latency",
+          "connection_timeout"
+        ]
+      },
+      {
+        "name": "throughput",
+        "description": "Data transfer rate",
+        "type": "gauge",
+        "unit": "Mbps",
+        "labels": [
+          "protocol",
+          "direction"
+        ],
+        "alerts": [
+          "low_throughput",
+          "high_throughput"
+        ]
+      },
+      {
+        "name": "error_rate",
+        "description": "Percentage of failed operations",
+        "type": "gauge",
+        "unit": "percentage",
+        "labels": [
+          "component",
+          "operation"
+        ],
+        "alerts": [
+          "high_error_rate"
+        ]
+      }
+    ],
+    "tuning": {
+      "parameters": [
+        {
+          "name": "connection_pool_size",
+          "description": "Size of connection pool",
+          "default": 100,
+          "recommended": 1000,
+          "impact": "High - affects connection reuse and memory usage",
+          "tradeoffs": [
+            "Larger pools use more memory",
+            "Smaller pools may cause connection churn"
+          ]
+        },
+        {
+          "name": "worker_pool_size",
+          "description": "Number of worker goroutines",
+          "default": 4,
+          "recommended": 8,
+          "impact": "Medium - affects CPU utilization and concurrency",
+          "tradeoffs": [
+            "More workers use more CPU",
+            "Fewer workers may limit concurrency"
+          ]
+        }
+      ],
+      "guidelines": [
+        "Monitor system resources continuously",
+        "Adjust parameters based on workload",
+        "Test changes in staging environment",
+        "Document configuration changes"
+      ],
+      "monitoring": [
+        "CPU and memory usage",
+        "Connection pool metrics",
+        "Request latency and throughput",
+        "Error rates and patterns"
+      ]
+    },
+    "profiling": {
+      "tools": [
+        "Go pprof",
+        "CPU profiler",
+        "Memory profiler",
+        "Block profiler",
+        "Mutex profiler"
+      ],
+      "techniques": [
+        "CPU profiling for bottlenecks",
+        "Memory profiling for leaks",
+        "Block profiling for contention",
+        "Trace profiling for latency"
+      ],
+      "analysis": [
+        "Identify hot paths",
+        "Analyze memory allocations",
+        "Detect goroutine leaks",
+        "Measure contention points"
+      ],
+      "optimization": [
+        "Reduce allocations in hot paths",
+        "Optimize algorithmic complexity",
+        "Minimize lock contention",
+        "Use efficient data structures"
+      ]
+    }
+  },
+  "testing": {
+    "test_suites": [
+      {
+        "name": "Unit Tests",
+        "description": "Tests for individual components",
+        "type": "unit",
+        "tests": [
+          "proxy_server_test.go",
+          "pipeline_engine_test.go",
+          "performance_manager_test.go",
+          "distributed_manager_test.go"
+        ],
+        "prerequisites": [
+          "Test environment setup",
+          "Mock dependencies",
+          "Test data preparation"
+        ],
+        "duration": "\u003c 5 minutes"
+      },
+      {
+        "name": "Integration Tests",
+        "description": "Tests for component interactions",
+        "type": "integration",
+        "tests": [
+          "full_system_test.go",
+          "component_interaction_test.go",
+          "configuration_test.go",
+          "metrics_test.go"
+        ],
+        "prerequisites": [
+          "Complete system setup",
+          "Network connectivity",
+          "Test configuration"
+        ],
+        "duration": "\u003c 15 minutes"
+      },
+      {
+        "name": "Performance Tests",
+        "description": "Performance benchmarks and load tests",
+        "type": "performance",
+        "tests": [
+          "connection_benchmark_test.go",
+          "throughput_test.go",
+          "latency_test.go",
+          "memory_test.go"
+        ],
+        "prerequisites": [
+          "Performance test environment",
+          "Monitoring tools",
+          "Baseline metrics"
+        ],
+        "duration": "\u003c 30 minutes"
+      },
+      {
+        "name": "Security Tests",
+        "description": "Security and DPI evasion tests",
+        "type": "security",
+        "tests": [
+          "dpi_evasion_test.go",
+          "protocol_obfuscation_test.go",
+          "behavioral_evasion_test.go",
+          "encryption_test.go"
+        ],
+        "prerequisites": [
+          "DPI simulation environment",
+          "Security test tools",
+          "Test traffic patterns"
+        ],
+        "duration": "\u003c 20 minutes"
+      }
+    ],
+    "test_strategy": {
+      "approach": [
+        "Test-driven development",
+        "Continuous integration",
+        "Automated testing",
+        "Comprehensive coverage"
+      ],
+      "environments": [
+        "Development environment",
+        "Staging environment",
+        "Production-like environment",
+        "Security test environment"
+      ],
+      "tools": [
+        "Go testing framework",
+        "Testify for assertions",
+        "Mock libraries",
+        "Performance testing tools",
+        "Security testing tools"
+      ],
+      "schedule": [
+        "Unit tests: on every commit",
+        "Integration tests: on every PR",
+        "Performance tests: daily",
+        "Security tests: weekly"
+      ],
+      "quality_gates": [
+        "Minimum 80% code coverage",
+        "No critical security vulnerabilities",
+        "Performance benchmarks met",
+        "All integration tests passing"
+      ]
+    },
+    "coverage": {
+      "overall": 85,
+      "components": {
+        "behavioral": 75,
+        "distributed": 85,
+        "performance": 80,
+        "pipeline_engine": 85,
+        "proxy_server": 90
+      },
+      "requirements": [
+        "Minimum 80% overall coverage",
+        "Minimum 70% coverage per component",
+        "Critical paths 100% covered",
+        "Security features 100% covered"
+      ],
+      "gaps": [
+        "Error handling paths",
+        "Edge cases in behavioral evasion",
+        "Failover scenarios",
+        "Performance optimization paths"
+      ]
+    },
+    "automation": {
+      "ci_cd": [
+        "GitHub Actions for CI/CD",
+        "Automated test execution",
+        "Automated deployment",
+        "Automated rollback"
+      ],
+      "tools": [
+        "GitHub Actions",
+        "Docker for containerization",
+        "Kubernetes for orchestration",
+        "Prometheus for monitoring"
+      ],
+      "scripts": [
+        "test_runner.sh",
+        "deploy.sh",
+        "rollback.sh",
+        "health_check.sh"
+      ],
+      "reports": [
+        "Test coverage reports",
+        "Performance benchmark reports",
+        "Security scan reports",
+        "Deployment status reports"
+      ]
+    }
+  },
+  "deployment": {
+    "environments": [
+      {
+        "name": "Development",
+        "type": "development",
+        "description": "Development environment for testing and debugging",
+        "requirements": [
+          "Go development environment",
+          "Test data and tools",
+          "Debugging capabilities"
+        ],
+        "configuration": {
+          "logging_level": "debug",
+          "monitoring": false,
+          "performance": false
+        },
+        "access": [
+          "Local development machine",
+          "SSH access to servers",
+          "Debug tools"
+        ]
+      },
+      {
+        "name": "Staging",
+        "type": "staging",
+        "description": "Staging environment for pre-production testing",
+        "requirements": [
+          "Production-like setup",
+          "Performance monitoring",
+          "Security testing"
+        ],
+        "configuration": {
+          "logging_level": "info",
+          "monitoring": true,
+          "performance": true
+        },
+        "access": [
+          "SSH access to servers",
+          "Monitoring dashboards",
+          "Deployment tools"
+        ]
+      },
+      {
+        "name": "Production",
+        "type": "production",
+        "description": "Production environment for live traffic",
+        "requirements": [
+          "High availability setup",
+          "Comprehensive monitoring",
+          "Security hardening"
+        ],
+        "configuration": {
+          "logging_level": "warn",
+          "monitoring": true,
+          "performance": true,
+          "security": true
+        },
+        "access": [
+          "Restricted SSH access",
+          "Monitoring dashboards",
+          "Alert systems"
+        ]
+      }
+    ],
+    "process": {
+      "stages": [
+        {
+          "name": "Pre-deployment Checks",
+          "description": "Verify system readiness for deployment",
+          "steps": [
+            "Run automated tests",
+            "Check system health",
+            "Verify configuration",
+            "Backup current version"
+          ],
+          "duration": "\u003c 10 minutes",
+          "validation": [
+            "All tests passing",
+            "System healthy",
+            "Configuration valid",
+            "Backup successful"
+          ],
+          "rollback": [
+            "Restore from backup",
+            "Stop deployment",
+            "Investigate issues"
+          ]
+        },
+        {
+          "name": "Deployment",
+          "description": "Deploy new version to production",
+          "steps": [
+            "Stop current system",
+            "Deploy new version",
+            "Start new system",
+            "Verify deployment"
+          ],
+          "duration": "\u003c 5 minutes",
+          "validation": [
+            "New system running",
+            "Health checks passing",
+            "Metrics within range",
+            "No critical errors"
+          ],
+          "rollback": [
+            "Stop new system",
+            "Restore previous version",
+            "Start previous system"
+          ]
+        },
+        {
+          "name": "Post-deployment Verification",
+          "description": "Verify deployment success and stability",
+          "steps": [
+            "Monitor system metrics",
+            "Run health checks",
+            "Verify functionality",
+            "Check performance"
+          ],
+          "duration": "\u003c 15 minutes",
+          "validation": [
+            "Metrics stable",
+            "Functionality working",
+            "Performance acceptable",
+            "Users not affected"
+          ],
+          "rollback": [
+            "Automatic rollback if thresholds exceeded",
+            "Manual rollback if issues detected"
+          ]
+        }
+      ],
+      "prerequisites": [
+        "Valid configuration",
+        "Sufficient system resources",
+        "Backup of current version",
+        "Test environment validation"
+      ],
+      "validation": [
+        "Automated test suite",
+        "Health check endpoints",
+        "Performance benchmarks",
+        "Security scans"
+      ],
+      "rollback": [
+        "Automated rollback on failure",
+        "Manual rollback capability",
+        "Rollback verification",
+        "Rollback notification"
+      ]
+    },
+    "configuration": {
+      "parameters": [
+        {
+          "name": "environment",
+          "description": "Target deployment environment",
+          "type": "string",
+          "default": "production",
+          "required": true,
+          "sensitive": false
+        },
+        {
+          "name": "version",
+          "description": "Version to deploy",
+          "type": "string",
+          "default": "latest",
+          "required": true,
+          "sensitive": false
+        },
+        {
+          "name": "api_key",
+          "description": "API key for external services",
+          "type": "string",
+          "default": "",
+          "required": false,
+          "sensitive": true
+        }
+      ],
+      "secrets": [
+        "Database credentials",
+        "API keys",
+        "Encryption keys",
+        "Service account tokens"
+      ],
+      "environment": [
+        "DEPLOY_ENV",
+        "API_KEY",
+        "DATABASE_URL",
+        "LOG_LEVEL"
+      ]
+    },
+    "monitoring": {
+      "metrics": [
+        "System health metrics",
+        "Performance metrics",
+        "Error rates",
+        "Resource utilization"
+      ],
+      "alerts": [
+        "High error rate",
+        "System downtime",
+        "Performance degradation",
+        "Security incidents"
+      ],
+      "dashboards": [
+        "System overview dashboard",
+        "Performance dashboard",
+        "Error tracking dashboard",
+        "Security dashboard"
+      ],
+      "logs": [
+        "Application logs",
+        "System logs",
+        "Security logs",
+        "Audit logs"
+      ]
+    },
+    "rollback": {
+      "triggers": [
+        "Health check failures",
+        "High error rates",
+        "Performance degradation",
+        "Security issues"
+      ],
+      "process": [
+        "Stop new deployment",
+        "Restore previous version",
+        "Verify rollback success",
+        "Notify stakeholders"
+      ],
+      "validation": [
+        "System health restored",
+        "Performance acceptable",
+        "Users not affected",
+        "No data loss"
+      ],
+      "limitations": [
+        "Rollback takes time",
+        "May affect active users",
+        "Data consistency issues",
+        "Configuration conflicts"
+      ]
+    }
+  },
+  "troubleshooting": {
+    "common_issues": [
+      {
+        "title": "High Connection Latency",
+        "description": "Connections are taking longer than expected to establish",
+        "symptoms": [
+          "Slow connection establishment",
+          "Timeout errors",
+          "Poor user experience"
+        ],
+        "causes": [
+          "Network congestion",
+          "Server overload",
+          "DNS resolution issues"
+        ],
+        "diagnostics": [
+          "Check network latency",
+          "Monitor server load",
+          "Verify DNS configuration"
+        ],
+        "solutions": [
+          "Optimize network configuration",
+          "Scale up resources",
+          "Use DNS caching"
+        ],
+        "prevention": [
+          "Monitor network performance",
+          "Implement connection pooling",
+          "Use CDN"
+        ]
+      },
+      {
+        "title": "High Memory Usage",
+        "description": "System is consuming more memory than expected",
+        "symptoms": [
+          "Memory usage alarms",
+          "System slowdown",
+          "Out of memory errors"
+        ],
+        "causes": [
+          "Memory leaks",
+          "Inefficient data structures",
+          "Large connection pools"
+        ],
+        "diagnostics": [
+          "Run memory profiler",
+          "Check heap dumps",
+          "Monitor allocation patterns"
+        ],
+        "solutions": [
+          "Fix memory leaks",
+          "Optimize data structures",
+          "Tune memory parameters"
+        ],
+        "prevention": [
+          "Regular memory profiling",
+          "Memory usage monitoring",
+          "Load testing"
+        ]
+      },
+      {
+        "title": "DPI Detection",
+        "description": "Traffic is being detected and blocked by DPI systems",
+        "symptoms": [
+          "Connection failures",
+          "Blocked traffic",
+          "Protocol detection"
+        ],
+        "causes": [
+          "Insufficient obfuscation",
+          "Protocol fingerprinting",
+          "Traffic patterns"
+        ],
+        "diagnostics": [
+          "Analyze traffic patterns",
+          "Check protocol signatures",
+          "Test evasion techniques"
+        ],
+        "solutions": [
+          "Enable behavioral evasion",
+          "Rotate protocols",
+          "Optimize obfuscation"
+        ],
+        "prevention": [
+          "Regular evasion updates",
+          "Traffic analysis",
+          "Protocol diversification"
+        ]
+      }
+    ],
+    "diagnostics": [
+      {
+        "name": "Connection Test",
+        "description": "Test basic connectivity and latency",
+        "commands": [
+          "ping target_host",
+          "traceroute target_host",
+          "telnet target_host port"
+        ],
+        "expected_output": "Successful ping responses",
+        "interpretation": "Network connectivity is working"
+      },
+      {
+        "name": "System Resources",
+        "description": "Check system resource utilization",
+        "commands": [
+          "top",
+          "free -h",
+          "df -h",
+          "netstat -an"
+        ],
+        "expected_output": "Resource usage within limits",
+        "interpretation": "System has sufficient resources"
+      },
+      {
+        "name": "Application Health",
+        "description": "Check application health status",
+        "commands": [
+          "curl http://localhost:8080/health",
+          "systemctl status socks5-proxy"
+        ],
+        "expected_output": "Healthy status response",
+        "interpretation": "Application is running correctly"
+      }
+    ],
+    "solutions": [
+      {
+        "title": "Restart Application",
+        "description": "Restart the application to clear temporary issues",
+        "steps": [
+          "Stop the application service",
+          "Wait for graceful shutdown",
+          "Start the application service",
+          "Verify health status"
+        ],
+        "verification": [
+          "Application is running",
+          "Health checks passing",
+          "Normal operation restored"
+        ],
+        "risks": [
+          "Temporary service interruption",
+          "Loss of in-flight connections",
+          "Data consistency issues"
+        ],
+        "alternatives": [
+          "Reload configuration",
+          "Restart specific components",
+          "Scale up resources"
+        ]
+      },
+      {
+        "title": "Scale Up Resources",
+        "description": "Increase system resources to handle load",
+        "steps": [
+          "Monitor resource usage",
+          "Identify bottlenecks",
+          "Scale up CPU/memory",
+          "Verify performance improvement"
+        ],
+        "verification": [
+          "Resource usage reduced",
+          "Performance improved",
+          "System stable"
+        ],
+        "risks": [
+          "Increased costs",
+          "Over-provisioning",
+          "Resource waste"
+        ],
+        "alternatives": [
+          "Optimize application",
+          "Implement caching",
+          "Load balancing"
+        ]
+      }
+    ],
+    "prevention": [
+      "Regular monitoring and alerting",
+      "Proactive performance tuning",
+      "Comprehensive testing",
+      "Documentation and knowledge sharing"
+    ],
+    "escalation": [
+      "Level 1: Basic troubleshooting",
+      "Level 2: Advanced diagnostics",
+      "Level 3: System architect",
+      "Level 4: Emergency response"
+    ]
+  },
+  "generated_at": "2026-05-12T02:10:34.419194+03:00",
+  "version": "1.0.0"
+}
