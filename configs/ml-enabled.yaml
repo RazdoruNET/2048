@@ -1,0 +1,280 @@
+listen: ":1080"
+log_level: "info"
+
+# ML-оптимизированные правила для разных типов DPI
+rules:
+  # YouTube - ML-based DPI с поведенческим анализом
+  - domain: "*.youtube.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 64
+        max_size: 256
+        ml_optimization: true
+        strategy: "ml_optimized"
+      encryption:
+        type: "chacha20poly1305"
+        key: "youtube_ml_key_2026"
+        key_rotation: true
+        rotation_interval: "1h"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        random_headers: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "human_like"
+        jitter_range: "50-200ms"
+
+  # Facebook - поведенческий DPI с анализом паттернов
+  - domain: "*.facebook.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 50
+        max_size: 200
+        ml_optimization: true
+      encryption:
+        type: "aes-gcm"
+        key: "facebook_ml_key_2026"
+        key_rotation: true
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        user_agent_rotation: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        burst_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.3
+
+  # Twitter - signature-based DPI с быстрыми блокировками
+  - domain: "*.twitter.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 32
+        max_size: 128
+        ml_optimization: true
+        strategy: "throughput_optimized"
+      encryption:
+        type: "chacha20poly1305"
+        key: "twitter_ml_key_2026"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        fast_headers: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.4
+
+  # TikTok - ML-based DPI с видео-стриминг анализом
+  - domain: "*.tiktok.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 80
+        max_size: 300
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "tiktok_ml_key_2026"
+        key_rotation: true
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        video_streaming_optimization: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        stream_simulation: true
+
+  # Instagram - поведенческий DPI с анализом изображений
+  - domain: "*.instagram.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 60
+        max_size: 240
+        ml_optimization: true
+      encryption:
+        type: "aes-gcm"
+        key: "instagram_ml_key_2026"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        image_optimization: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        image_request_simulation: true
+
+  # Reddit - гибридный DPI с множественными техниками
+  - domain: "*.reddit.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 40
+        max_size: 180
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "reddit_ml_key_2026"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        api_optimization: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        api_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+
+  # Общие правила для всех остальных доменов
+  - domain: "*"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 50
+        max_size: 200
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "default_ml_key_2026"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+
+# Глобальные ML настройки
+ml_engine:
+  enabled: true
+  learning_rate: 0.1
+  confidence_threshold: 0.85
+  model_update_interval: "30m"
+  effectiveness_threshold: 0.7
+  
+  # DPI детекция
+  dpi_detection:
+    enabled: true
+    signature_based: true
+    behavioral: true
+    ml_based: true
+    thresholds:
+      signature: 0.7
+      behavioral: 0.8
+      ml_based: 0.9
+    
+  # Feature extraction
+  feature_extraction:
+    enabled: true
+    packet_features: true
+    flow_features: true
+    timing_features: true
+    http_features: true
+    tls_features: true
+  
+  # Техника кэширования
+  technique_cache:
+    enabled: true
+    max_size: 1000
+    ttl: "1h"
+    
+  # Обучение с подкреплением
+  reinforcement_learning:
+    enabled: true
+    exploration_rate: 0.1
+    discount_factor: 0.95
+    learning_episodes: 1000
+
+# Квантово-устойчивые настройки (экспериментальные)
+quantum_resistant:
+  enabled: false
+  algorithms:
+    - "lattice_based"
+    - "hash_based"
+  key_sizes: [256, 512, 1024]
+  security_level: "post_quantum"
+
+# Безопасность
+security:
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    requests_per_second: 100
+    burst_size: 1000
+    
+  # IP фильтрация
+  ip_filtering:
+    enabled: true
+    whitelist:
+      - "192.168.0.0/16"
+      - "10.0.0.0/8"
+      - "127.0.0.0/8"
+    
+  # Защита от атак
+  anti_tampering:
+    enabled: true
+    integrity_check: "hmac-sha256"
+    
+  # Приватность
+  privacy:
+    anonymization: true
+    data_minimization: true
+    log_encryption: false
+
+# Мониторинг
+monitoring:
+  # Метрики
+  metrics:
+    enabled: true
+    interval: "30s"
+    include:
+      - "connections"
+      - "throughput"
+      - "latency"
+      - "dpi_detection"
+      - "ml_effectiveness"
+      - "error_rate"
+    
+  # Логирование
+  logging:
+    levels: ["ERROR", "WARN", "INFO", "DEBUG"]
+    format: "json"
+    rotation:
+      max_size: "100MB"
+      max_files: 10
+      compress: true
+    
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: "30s"
+    timeout: "5s"
+    retries: 3
+
+# Производительность
+performance:
+  # Go runtime
+  gomaxprocs: 8
+  gc_percent: 20
+  
+  # Сетевые пулы
+  connection_pool:
+    max_connections: 10000
+    idle_timeout: "30s"
+    read_buffer_size: 8192
+    write_buffer_size: 8192
+    
+  # ML оптимизация
+  ml:
+    cache_size: "1000"
+    batch_size: 32
+    parallel_processing: true
+    model_quantization: true
