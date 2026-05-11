@@ -27,6 +27,30 @@ rules:
         reality:
           enabled: false
 
+  # Hysteria2 protocol for high-speed bypass
+  - domain: "*.netflix.com"
+    port: 443
+    pipeline:
+      hysteria2_client:
+        server: "hysteria2.example.com"
+        port: 443
+        password: "hysteria2_password"
+        obfuscation: "xchacha20-ietf-poly1305"
+        up_mbps: 100
+        down_mbps: 100
+
+  # TUIC protocol for mobile networks
+  - domain: "*.instagram.com"
+    port: 443
+    pipeline:
+      tuic_client:
+        server: "tuic.example.com"
+        port: 443
+        uuid: "12345678-1234-1234-1234-123456789def"
+        password: "tuic_password"
+        ip_version: 4
+        congestion_control: "bbr"
+
   # Aggressive bypass for heavily filtered sites
   - domain: "*.twitter.com"
     port: 443

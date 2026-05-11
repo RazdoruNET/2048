@@ -97,6 +97,10 @@ func (e *Engine) createModifierInstance(name string) Modifier {
 		return &BehavioralEvasionModifier{}
 	case "vless_client":
 		return NewVLESSModifier()
+	case "hysteria2_client":
+		return NewHysteria2Modifier()
+	case "tuic_client":
+		return NewTUICModifier()
 	default:
 		return nil
 	}
