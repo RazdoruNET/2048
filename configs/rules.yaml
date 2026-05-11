@@ -1,0 +1,62 @@
+# DPI bypass rules configuration
+rules:
+  # Aggressive bypass for heavily filtered sites
+  - domain: "*.twitter.com"
+    port: 443
+    pipeline:
+      fragmentation:
+        min_size: 64
+        max_size: 128
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+        add_junk_headers: true
+        custom_headers:
+          "X-Forwarded-Proto": "https"
+          "X-Forwarded-Host": "twitter.com"
+      encryption:
+        type: "xor"
+        key: "twitter_bypass"
+      protocol_mask:
+        type: "tls"
+        https_noise: true
+
+  # Medium bypass for news sites
+  - domain: "*.bbc.com"
+    pipeline:
+      headers:
+        random_headers: true
+        add_junk_headers: false
+        custom_headers:
+          "Accept-Language": "en-US,en;q=0.9"
+      fragmentation:
+        size: 256
+        random: false
+
+  # Light bypass for general sites
+  - domain: "*.wikipedia.org"
+    pipeline:
+      headers:
+        random_headers: true
+
+  # SSH protocol masking for specific targets
+  - domain: "git.example.com"
+    pipeline:
+      protocol_mask:
+        type: "ssh"
+        ssh_padding: true
+
+  # RC4 encryption for sensitive communications
+  - ip_range: "10.0.0.0/8"
+    pipeline:
+      encryption:
+        type: "rc4"
+        key: "secure_comm_key"
+
+  # Default minimal bypass
+  - domain: "*"
+    pipeline:
+      headers:
+        random_headers: false
+        modify_host: false

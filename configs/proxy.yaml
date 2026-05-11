@@ -1,0 +1,54 @@
+listen: ":1080"
+log_level: "info"
+
+# Pipeline rules for DPI bypass
+rules:
+  # Rule for blocked social media
+  - domain: "*.facebook.com"
+    pipeline:
+      fragmentation:
+        min_size: 50
+        max_size: 150
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+        add_junk_headers: true
+        user_agents:
+          - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+      encryption:
+        type: "chacha20poly1305"
+        key: "facebook_secure_key_2026"
+
+  # Rule for video streaming sites
+  - domain: "*.youtube.com"
+    pipeline:
+      fragmentation:
+        size: 100
+        random: false
+      protocol_mask:
+        type: "https"
+        https_noise: true
+
+  # Rule for news sites
+  - domain: "*.cnn.com"
+    pipeline:
+      headers:
+        random_headers: true
+        custom_headers:
+          "X-Forwarded-For": "192.168.1.100"
+          "X-Real-IP": "10.0.0.1"
+
+  # Rule for specific IP range
+  - ip_range: "192.168.1.0/24"
+    pipeline:
+      encryption:
+        type: "aes-gcm"
+        key: "lan_secure_key_2026"
+
+  # Default rule for all other traffic
+  - domain: "*"
+    pipeline:
+      headers:
+        random_headers: true
