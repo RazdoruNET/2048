@@ -51,6 +51,33 @@ rules:
         ip_version: 4
         congestion_control: "bbr"
 
+  # Behavioral Evasion 2.0 for high DPI targets
+  - domain: "*.youtube.com"
+    port: 443
+    pipeline:
+      behavioral_evasion:
+        enabled: true
+        debug_mode: false
+        timing_enabled: true
+        timing_patterns: ["human", "mobile", "bot"]
+        humanization_level: 4
+        obfuscation_enabled: true
+        obfuscation_level: 4
+        ml_optimization: true
+        fingerprinting_enabled: true
+        protection_level: 4
+        browser_masking: true
+        adaptation_enabled: true
+        adaptation_rate: 0.15
+        learning_enabled: true
+        timing_randomization: true
+        connection_pattern: "human_like"
+        jitter_range: "50-300ms"
+        burst_simulation: true
+        stream_simulation: true
+        image_request_simulation: true
+        api_simulation: true
+
   # Aggressive bypass for heavily filtered sites
   - domain: "*.twitter.com"
     port: 443
