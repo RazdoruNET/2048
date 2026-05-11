@@ -1,0 +1,361 @@
+# Production Configuration for Battle-Ready SOCKS5 DPI Proxy
+# Optimized for maximum bypass effectiveness against modern DPI systems
+
+listen: ":1080"
+log_level: "warn"  # Reduced logging for production
+
+# ML Engine Configuration
+ml_enabled: true
+ml_engine:
+  enabled: true
+  learning_rate: 0.15
+  confidence_threshold: 0.9
+  model_update_interval: "15m"
+  effectiveness_threshold: 0.8
+  
+  dpi_detection:
+    enabled: true
+    signature_based: true
+    behavioral: true
+    ml_based: true
+    thresholds:
+      signature: 0.8
+      behavioral: 0.85
+      ml_based: 0.9
+      
+  feature_extraction:
+    enabled: true
+    packet_features: true
+    flow_features: true
+    timing_features: true
+    http_features: true
+    tls_features: true
+    
+  technique_cache:
+    enabled: true
+    max_size: 2000
+    ttl: "2h"
+    
+  reinforcement_learning:
+    enabled: true
+    exploration_rate: 0.15
+    discount_factor: 0.95
+    learning_episodes: 5000
+
+# Advanced DPI Bypass Rules
+rules:
+  # High-value targets with maximum protection
+  - domain: "*.youtube.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 64
+        max_size: 256
+        ml_optimization: true
+        strategy: "ml_optimized"
+      encryption:
+        type: "chacha20poly1305"
+        key: "youtube_production_key_2026"
+        key_rotation: true
+        rotation_interval: "30m"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        random_headers: true
+        user_agent_rotation: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "human_like"
+        jitter_range: "100-500ms"
+        burst_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.4
+
+  # Social media platforms
+  - domain: "*.facebook.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 50
+        max_size: 200
+        ml_optimization: true
+      encryption:
+        type: "aes-gcm"
+        key: "facebook_production_key_2026"
+        key_rotation: true
+        rotation_interval: "45m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "human_like"
+        jitter_range: "150-400ms"
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.3
+
+  - domain: "*.twitter.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 32
+        max_size: 128
+        ml_optimization: true
+        strategy: "throughput_optimized"
+      encryption:
+        type: "chacha20poly1305"
+        key: "twitter_production_key_2026"
+        key_rotation: true
+        rotation_interval: "20m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "burst_like"
+        jitter_range: "50-200ms"
+        burst_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.5
+
+  # Video streaming platforms
+  - domain: "*.tiktok.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 80
+        max_size: 300
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "tiktok_production_key_2026"
+        key_rotation: true
+        rotation_interval: "25m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "stream_like"
+        jitter_range: "200-800ms"
+        stream_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.6
+
+  # Instagram special handling
+  - domain: "*.instagram.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 60
+        max_size: 240
+        ml_optimization: true
+      encryption:
+        type: "aes-gcm"
+        key: "instagram_production_key_2026"
+        key_rotation: true
+        rotation_interval: "35m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "image_like"
+        jitter_range: "100-600ms"
+        image_request_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.4
+
+  # Reddit API optimization
+  - domain: "*.reddit.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 40
+        max_size: 180
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "reddit_production_key_2026"
+        key_rotation: true
+        rotation_interval: "40m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "api_like"
+        jitter_range: "75-300ms"
+        api_simulation: true
+      protocol_mask:
+        type: "https"
+        https_noise: true
+        noise_ratio: 0.3
+
+  # News and information sites
+  - domain: "*.cnn.com"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 100
+        max_size: 400
+        ml_optimization: false
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        custom_headers:
+          "X-Forwarded-For": "192.168.1.100"
+          "X-Real-IP": "10.0.0.1"
+          "X-CDN-Geo": "US"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "browser_like"
+
+  # Telegram protection
+  - domain: "*.telegram.org"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 50
+        max_size: 200
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "telegram_production_key_2026"
+        key_rotation: true
+        rotation_interval: "30m"
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "messenger_like"
+        jitter_range: "150-500ms"
+
+  # Telegram IP ranges
+  - ip_range: "149.154.160.0/20"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 64
+        max_size: 256
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "telegram_ip_range_key_2026"
+        key_rotation: true
+        rotation_interval: "25m"
+
+  - ip_range: "91.108.4.0/22"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 64
+        max_size: 256
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "telegram_ip_range2_key_2026"
+        key_rotation: true
+        rotation_interval: "25m"
+
+  # Default rule for all other traffic
+  - domain: "*"
+    pipeline:
+      adaptive_fragmentation:
+        enabled: true
+        min_size: 50
+        max_size: 200
+        ml_optimization: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "default_production_key_2026"
+        key_rotation: true
+        rotation_interval: "60m"
+      headers:
+        ml_enabled: true
+        adaptive_headers: true
+        random_headers: true
+      behavioral_evasion:
+        enabled: true
+        timing_randomization: true
+        connection_pattern: "conservative"
+        jitter_range: "50-150ms"
+
+# Security Configuration
+security:
+  rate_limiting:
+    enabled: true
+    requests_per_second: 200
+    burst_size: 2000
+    
+  ip_filtering:
+    enabled: true
+    whitelist:
+      - "192.168.0.0/16"
+      - "10.0.0.0/8"
+      - "127.0.0.0/8"
+      - "172.16.0.0/12"
+      
+  anti_tampering:
+    enabled: true
+    integrity_check: "hmac-sha256"
+    
+  privacy:
+    anonymization: true
+    data_minimization: true
+    log_encryption: false
+
+# Monitoring Configuration
+monitoring:
+  metrics:
+    enabled: true
+    interval: "15s"
+    include:
+      - "connections"
+      - "throughput"
+      - "latency"
+      - "dpi_detection"
+      - "ml_effectiveness"
+      - "error_rate"
+      - "bypass_success_rate"
+      
+  logging:
+    levels: ["ERROR", "WARN"]  # Only ERROR and WARN in production
+    format: "json"
+    rotation:
+      max_size: "500MB"
+      max_files: 20
+      compress: true
+      
+  health_checks:
+    enabled: true
+    interval: "15s"
+    timeout: "3s"
+    retries: 5
+
+# Performance Configuration
+performance:
+  gomaxprocs: 16
+  gc_percent: 15
+  
+  connection_pool:
+    max_connections: 50000
+    idle_timeout: "20s"
+    read_buffer_size: 16384
+    write_buffer_size: 16384
+    
+  ml:
+    cache_size: "2000"
+    batch_size: 64
+    parallel_processing: true
+    model_quantization: true
+
+# Quantum-Resistant Configuration (Experimental)
+quantum_resistant:
+  enabled: false
+  algorithms:
+    - "lattice_based"
+    - "hash_based"
+  key_sizes: [256, 512, 1024]
+  security_level: "post_quantum"
