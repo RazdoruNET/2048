@@ -318,6 +318,15 @@ func (mle *MLPipelineEngine) UpdateLearning(domain, technique string, success bo
 	return nil
 }
 
+// GetRecommendedTechniques returns recommended techniques for given domain
+func (mle *MLPipelineEngine) GetRecommendedTechniques(domain string) []string {
+	if mle.detector == nil {
+		return []string{"fragmentation", "encryption", "headers"} // Fallback
+	}
+
+	return mle.detector.GetRecommendedTechniques(domain)
+}
+
 // GetOptimalTechnique returns the best technique for given domain
 func (mle *MLPipelineEngine) GetOptimalTechnique(domain string) (string, float64) {
 	if mle.detector == nil {
