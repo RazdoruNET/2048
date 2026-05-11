@@ -31,9 +31,9 @@ func (h *Hysteria2Modifier) Name() string {
 func (h *Hysteria2Modifier) Configure(config map[string]interface{}) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	
+
 	h.config = config
-	
+
 	// Parse Hysteria2 configuration
 	hysteria2Config, err := h.parseHysteria2Config(config)
 	if err != nil {
@@ -50,12 +50,12 @@ func (h *Hysteria2Modifier) Configure(config map[string]interface{}) error {
 func (h *Hysteria2Modifier) Process(data []byte, direction Direction) []byte {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	
+
 	// Only process outbound traffic
 	if direction == DirectionInbound {
 		return data
 	}
-	
+
 	// Connect if not connected
 	if h.client == nil || !h.client.IsConnected() {
 		if err := h.client.Connect(context.Background()); err != nil {
@@ -63,7 +63,7 @@ func (h *Hysteria2Modifier) Process(data []byte, direction Direction) []byte {
 			return data
 		}
 	}
-	
+
 	// Send data via Hysteria2
 	if err := h.client.SendData(data); err != nil {
 		// Try to reconnect and send again
@@ -75,47 +75,48 @@ func (h *Hysteria2Modifier) Process(data []byte, direction Direction) []byte {
 			return data
 		}
 	}
-	
-	// For now, return empty data as response will come through different channel
-	// In real implementation, this would be handled by connection manager
-	return []byte{}
+
+	// For now, pass data through without modification
+	// In a full Hysteria2 implementation, this would handle tunneling
+	// For basic functionality, return original data to allow HTTP requests to work
+	return data
 }
 
 // parseHysteria2Config parses configuration from map
 func (h *Hysteria2Modifier) parseHysteria2Config(config map[string]interface{}) (*hysteria2.Hysteria2Config, error) {
 	hysteria2Config := hysteria2.CreateHysteria2Config()
-	
+
 	// Parse server
 	if server, ok := config["server"].(string); ok {
 		hysteria2Config.Server = server
 	} else {
 		return nil, fmt.Errorf("server is required")
 	}
-	
+
 	// Parse port
 	if port, ok := config["port"].(int); ok {
 		hysteria2Config.Port = port
 	}
-	
+
 	// Parse password
 	if password, ok := config["password"].(string); ok {
 		hysteria2Config.Password = password
 	}
-	
+
 	// Parse obfuscation
 	if obfuscation, ok := config["obfuscation"].(string); ok {
 		hysteria2Config.Obfuscation = obfuscation
 	}
-	
+
 	// Parse bandwidth
 	if upMbps, ok := config["up_mbps"].(int); ok {
 		hysteria2Config.UpMbps = upMbps
 	}
-	
+
 	if downMbps, ok := config["down_mbps"].(int); ok {
 		hysteria2Config.DownMbps = downMbps
 	}
-	
+
 	return hysteria2Config, nil
 }
 
@@ -123,7 +124,7 @@ func (h *Hysteria2Modifier) parseHysteria2Config(config map[string]interface{}) 
 func (h *Hysteria2Modifier) GetServer() string {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	if server, ok := h.config["server"].(string); ok {
 		return server
 	}
@@ -134,7 +135,7 @@ func (h *Hysteria2Modifier) GetServer() string {
 func (h *Hysteria2Modifier) GetPort() int {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	if port, ok := h.config["port"].(int); ok {
 		return port
 	}
@@ -145,9 +146,9 @@ func (h *Hysteria2Modifier) GetPort() int {
 func (h *Hysteria2Modifier) IsEnabled() bool {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	_, hasServer := h.config["server"].(string)
 	_, hasPassword := h.config["password"].(string)
-	
+
 	return hasServer && hasPassword
 }

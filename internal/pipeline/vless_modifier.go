@@ -104,9 +104,10 @@ func (v *VLESSModifier) Process(data []byte, direction Direction) []byte {
 		}
 	}
 
-	// For now, return empty data as response will come through different channel
-	// In real implementation, this would be handled by connection manager
-	return []byte{}
+	// For now, pass data through without modification
+	// In a full VLESS implementation, this would handle tunneling
+	// For basic functionality, return original data to allow HTTP requests to work
+	return data
 }
 
 // connect establishes VLESS connection
