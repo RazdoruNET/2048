@@ -15,6 +15,19 @@ type AdaptiveFragmentationModifier struct {
 	lastAdaptation time.Time
 }
 
+// NewAdaptiveFragmentationModifier creates new adaptive fragmentation modifier
+func NewAdaptiveFragmentationModifier(minSize, maxSize int, randomSizes bool) *AdaptiveFragmentationModifier {
+	return &AdaptiveFragmentationModifier{
+		MinSize:        minSize,
+		MaxSize:        maxSize,
+		RandomSizes:    randomSizes,
+		MLOptimization: false,
+		Strategy:       "simple",
+		rand:           rand.New(rand.NewSource(time.Now().UnixNano())),
+		lastAdaptation: time.Now(),
+	}
+}
+
 func (a *AdaptiveFragmentationModifier) Name() string {
 	return "adaptive_fragmentation"
 }

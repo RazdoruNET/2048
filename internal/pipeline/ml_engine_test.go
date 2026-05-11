@@ -266,16 +266,16 @@ func TestAdaptiveFragmentationModifier(t *testing.T) {
 		t.Errorf("Unexpected configuration error: %v", err)
 	}
 
-	if modifier.minSize != 100 {
-		t.Errorf("Expected min_size 100, got %d", modifier.minSize)
+	if modifier.MinSize != 100 {
+		t.Errorf("Expected min_size 100, got %d", modifier.MinSize)
 	}
 
-	if modifier.maxSize != 300 {
-		t.Errorf("Expected max_size 300, got %d", modifier.maxSize)
+	if modifier.MaxSize != 300 {
+		t.Errorf("Expected max_size 300, got %d", modifier.MaxSize)
 	}
 
-	if modifier.randomSizes != false {
-		t.Errorf("Expected random false, got %v", modifier.randomSizes)
+	if modifier.RandomSizes != false {
+		t.Errorf("Expected random false, got %v", modifier.RandomSizes)
 	}
 }
 
@@ -411,4 +411,18 @@ func BenchmarkAdaptiveFragmentationModifier_Process(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		modifier.Process(data, DirectionOutbound)
 	}
+}
+
+// Helper functions for tests
+
+func findSubstring(s, substr string) bool {
+	if substr == "" {
+		return true // Empty substring matches at position 0
+	}
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
