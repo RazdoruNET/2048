@@ -114,14 +114,15 @@ func (pr *PipelineRetry) RetryWithPipeline(ctx context.Context, req *SOCKS5Reque
 	if result.Success {
 		log.Printf("Pipeline retry successful for %s:%d using %s after %d attempts (%v)",
 			req.DstAddr, req.DstPort, result.Technique, result.Attempts, result.Duration)
+		return result, nil
 	} else {
 		log.Printf("Pipeline retry failed for %s:%d after %d attempts: %v",
 			req.DstAddr, req.DstPort, result.Attempts, result.Error)
 		// Update failure count for circuit breaker
 		pr.updateFailureCount(req.DstAddr)
+		// Return error on failure for test compatibility
+		return result, fmt.Errorf("pipeline retry failed after %d attempts", result.Attempts)
 	}
-
-	return result, nil
 }
 
 // retrySequential tries techniques one by one

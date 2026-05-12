@@ -81,6 +81,33 @@ func (e *Engine) initializeRuleModifiers(rule *Rule) error {
 	return nil
 }
 
+// initializeRuleModifiersV2 creates ModifierV2 instances for enhanced pipeline
+func (e *Engine) initializeRuleModifiersV2(rule *Rule) error {
+	rule.modifiers = make([]Modifier, 0)
+
+	// Parse pipeline configuration
+	for modifierName, config := range rule.Config {
+		// Create a new instance of the modifier
+		newModifier := e.createModifierInstanceV2(modifierName)
+		if newModifier == nil {
+			log.Printf("Failed to create modifier V2 instance: %s", modifierName)
+			continue
+		}
+
+		// Configure the modifier
+		if configMap, ok := config.(map[string]interface{}); ok {
+			if err := newModifier.Configure(configMap); err != nil {
+				log.Printf("Failed to configure modifier V2 %s: %v", modifierName, err)
+				continue
+			}
+		}
+
+		rule.modifiers = append(rule.modifiers, newModifier)
+	}
+
+	return nil
+}
+
 func (e *Engine) createModifierInstance(name string) Modifier {
 	switch name {
 	case "fragmentation":
@@ -103,6 +130,74 @@ func (e *Engine) createModifierInstance(name string) Modifier {
 		return NewTUICModifier()
 	default:
 		return nil
+	}
+}
+
+// createModifierInstanceV2 creates ModifierV2 instances with enhanced capabilities
+func (e *Engine) createModifierInstanceV2(name string) ModifierV2 {
+	switch name {
+	case "fragmentation":
+		return &FragmentationModifier{}
+	case "adaptive_fragmentation":
+		return &AdaptiveFragmentationModifier{}
+	case "headers":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(&HeadersModifier{})
+	case "encryption":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(&EncryptionModifier{})
+	case "protocol_mask":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(&ProtocolMaskModifier{})
+	case "behavioral_evasion":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(&BehavioralEvasionModifier{})
+	case "vless_client":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(NewVLESSModifier())
+	case "hysteria2_client":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(NewHysteria2Modifier())
+	case "tuic_client":
+		// Wrap legacy modifier for compatibility
+		return NewLegacyModifierWrapper(NewTUICModifier())
+	default:
+		return nil
+	}
+}
+
+// CreatePipelineV2 creates an enhanced pipeline with ModifierV2 support
+func (e *Engine) CreatePipelineV2(target string, port uint16) *PipelineV2 {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	rule := e.findRule(target, port)
+	if rule == nil {
+		return nil
+	}
+
+	// Initialize V2 modifiers
+	if err := e.initializeRuleModifiersV2(rule); err != nil {
+		log.Printf("Failed to initialize V2 modifiers for rule %s: %v", rule.Domain, err)
+		return nil
+	}
+
+	// Convert to ModifierV2 slice
+	modifiersV2 := make([]ModifierV2, 0, len(rule.modifiers))
+	for _, modifier := range rule.modifiers {
+		if modV2, ok := modifier.(ModifierV2); ok {
+			modifiersV2 = append(modifiersV2, modV2)
+		} else {
+			// Wrap legacy modifier
+			modifiersV2 = append(modifiersV2, NewLegacyModifierWrapper(modifier))
+		}
+	}
+
+	return &PipelineV2{
+		modifiers: modifiersV2,
+		target:    target,
+		port:      port,
+		config:    DefaultConnectionConfig(),
 	}
 }
 

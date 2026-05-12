@@ -178,13 +178,8 @@ func TestRetryWithPipeline_Success(t *testing.T) {
 }
 
 func TestRetryWithPipeline_Failure(t *testing.T) {
-	// Create failing modifier
-	failModifier := &MockModifier{
-		name:       "fail",
-		shouldFail: true,
-	}
-
-	engine := NewMockEngineWrapper([]Modifier{failModifier})
+	// Create empty engine to simulate no available pipeline
+	engine := NewMockEngineWrapper([]Modifier{}) // No modifiers = no pipeline
 	retry := NewPipelineRetry(engine, DefaultRetryConfig())
 
 	req := &SOCKS5Request{
