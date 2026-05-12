@@ -13,7 +13,8 @@ import (
 
 	"socks5-dpi-proxy/internal/api/handlers"
 	"socks5-dpi-proxy/internal/api/middleware"
-	"socks5-dpi-proxy/internal/pipeline"
+	"socks5-dpi-proxy/internal/health"
+	"socks5-dpi-proxy/internal/ml"
 	"socks5-dpi-proxy/internal/storage"
 
 	"github.com/gin-gonic/gin"
@@ -39,12 +40,59 @@ func main() {
 	defer storage.Close()
 
 	// Initialize ML engine
-	mlEngine := pipeline.NewMLPipelineEngine()
+	mlEngine := ml.NewSimpleMLEngine(nil)
+
+	// Initialize persistence manager
+	persistenceManager := ml.NewPersistenceManager(
+		"data/ml_config.json",
+		"data/ml_data.json",
+	)
+
+	// Initialize WebSocket notifier
+	wsNotifier := ml.NewWebSocketNotifier()
+
+	// Add notification callback to persistence manager
+	persistenceManager.AddNotificationCallback(func(event ml.PersistenceEvent) error {
+		wsNotifier.Notify(event)
+		return nil
+	})
+
+	// Start persistence manager
+	if err := persistenceManager.Start(); err != nil {
+		log.Fatalf("Failed to start persistence manager: %v", err)
+	}
+	defer persistenceManager.Stop()
+
+	// Initialize health monitor
+	healthMonitor := health.NewHealthMonitor("1.0.0", "development")
+
+	// Register ML engine for health monitoring
+	mlHealthCheck := health.NewMLHealthCheck(mlEngine)
+	healthMonitor.RegisterComponent(mlHealthCheck)
+
+	// Start health monitoring
+	healthMonitor.StartMonitoring()
 
 	// Initialize handlers
 	mlHandler := handlers.NewMLHandler(mlEngine, storage)
 	requestHandler := handlers.NewRequestHandler(storage)
 	wsHandler := handlers.NewWebSocketHandler()
+	healthHandler := handlers.NewHealthHandler(healthMonitor)
+
+	// Initialize demo data generator
+	demoGenerator := handlers.NewDemoDataGenerator(storage, wsHandler)
+
+	// Generate initial demo data
+	log.Println("Generating demo data...")
+	if err := demoGenerator.GenerateDemoData(); err != nil {
+		log.Printf("Failed to generate demo data: %v", err)
+	} else {
+		log.Println("Demo data generated successfully")
+	}
+
+	// Start continuous demo data generation
+	demoGenerator.StartContinuousDemo()
+	log.Println("Started continuous demo data generation")
 
 	// Setup Gin router
 	router := gin.New()
@@ -55,14 +103,13 @@ func main() {
 	router.Use(middleware.CORS())
 	router.Use(middleware.RequestID())
 
-	// Health check
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ok",
-			"timestamp": time.Now().UTC(),
-			"version":   "1.0.0",
-		})
-	})
+	// Health check endpoints
+	router.GET("/health", healthHandler.LivenessProbe)
+	router.GET("/health/ready", healthHandler.ReadinessProbe)
+	router.GET("/health/system", healthHandler.GetSystemHealth)
+	router.GET("/health/stats", healthHandler.GetHealthStatistics)
+	router.POST("/health/check/:component", healthHandler.ForceHealthCheck)
+	router.GET("/health/:component", healthHandler.GetComponentHealth)
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -87,6 +134,7 @@ func main() {
 		{
 			requests.GET("", requestHandler.GetRequests)
 			requests.GET("/:id", requestHandler.GetRequestDetails)
+			requests.GET("/:id/modal", requestHandler.GetRequestDetailsModal)
 		}
 
 		// Domain statistics
@@ -118,6 +166,9 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
+
+	// Stop health monitoring
+	healthMonitor.StopMonitoring()
 
 	// Give outstanding requests 30 seconds to finish
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

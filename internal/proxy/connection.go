@@ -178,12 +178,29 @@ func (s *Server) establishConnection(ctx context.Context, req *SOCKS5Request, pi
 	// If direct connection fails and we have a pipeline, try with pipeline
 	if pipe != nil {
 		log.Printf("Direct connection failed, retrying with DPI bypass: %v", err)
-		// For now, still try direct connection as pipeline bypass needs proper implementation
-		// TODO: Implement actual pipeline-based connection retry
-		conn, retryErr := connectToDestination(req)
-		if retryErr == nil {
-			return conn, nil
+
+		// Create pipeline retry instance
+		retryConfig := pipeline.DefaultRetryConfig()
+		retry := pipeline.NewPipelineRetry(s.pipeline, retryConfig)
+
+		// Convert to pipeline request format
+		pipeReq := &pipeline.SOCKS5Request{
+			Version:  req.Version,
+			Command:  req.Command,
+			Reserved: req.Reserved,
+			AddrType: req.AddrType,
+			DstAddr:  req.DstAddr,
+			DstPort:  req.DstPort,
 		}
+
+		// Attempt connection with pipeline retry
+		result, retryErr := retry.RetryWithPipeline(context.Background(), pipeReq)
+		if retryErr == nil && result.Success && result.Connection != nil {
+			log.Printf("Pipeline retry successful using technique: %s", result.Technique)
+			return result.Connection, nil
+		}
+
+		log.Printf("Pipeline retry failed: %v", retryErr)
 		return nil, fmt.Errorf("both direct and pipeline connections failed: %v, %v", err, retryErr)
 	}
 

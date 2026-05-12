@@ -1,22 +1,166 @@
-# Деплоймент SOCKS5 DPI Proxy
+# 🚀 Руководство по развертыванию SOCKS5 DPI Proxy
 
-## Готовность к продакшену
+## 📋 Обзор
 
-✅ **Прокси полностью функционален и готов к использованию:**
+Это руководство описывает процесс развертывания SOCKS5 DPI Proxy в различных средах - от разработки до production.
 
-- SOCKS5 сервер работает на порту 1080
-- Загружено 5 правил пайплайнов из конфигурации
-- DPI bypass механизмы активны для заблокированных доменов
-- Оптимизация маршрутизации работает (прямые соединения для доступных доменов)
-- HTTP/HTTPS трафик обрабатывается корректно
+**Версия**: 0.2.0-prod  
+**Статус**: Production Ready с ограничениями  
+**Требования**: Go 1.25+, Docker (опционально)
 
-## Быстрый старт
+---
+
+## 🔧 Требования к системе
+
+### Минимальные требования:
+- **CPU**: 2 ядра
+- **RAM**: 2GB
+- **Диск**: 10GB свободного места
+- **ОС**: Linux (Ubuntu 20.04+, CentOS 8+, Debian 10+)
+- **Сеть**: Стабильное интернет соединение
+
+### Рекомендуемые требования:
+- **CPU**: 4+ ядер
+- **RAM**: 8GB+
+- **Диск**: 50GB+ SSD
+- **ОС**: Linux с ядром 5.4+
+- **Сеть**: Высокоскоростное соединение
+
+### Дополнительные зависимости:
+- **Docker**: 20.10+ (для контейнеризации)
+- **Docker Compose**: 2.0+ (для multi-service развертывания)
+- **Node.js**: 18+ (только для разработки dashboard)
+
+---
+
+## 📦 Способы развертывания
+
+### 1. Прямая установка (Binary)
+
+#### Сборка из исходников:
+```bash
+# Клонирование репозитория
+git clone https://github.com/your-repo/socks5-dpi-proxy.git
+cd socks5-dpi-proxy
+
+# Сборка бинарного файла
+go build -o socks5-dpi-proxy ./cmd/main.go
+
+# Проверка сборки
+./socks5-dpi-proxy --version
+```
+
+#### Использование готовых бинарников:
+```bash
+# Скачивание последней версии
+wget https://releases.example.com/socks5-dpi-proxy-v0.2.0-linux-amd64.tar.gz
+
+# Распаковка
+tar -xzf socks5-dpi-proxy-v0.2.0-linux-amd64.tar.gz
+
+# Копирование бинарника
+sudo cp socks5-dpi-proxy /usr/local/bin/
+sudo chmod +x /usr/local/bin/socks5-dpi-proxy
+```
+
+#### Создание systemd сервиса:
+```bash
+# Создание файла сервиса
+sudo nano /etc/systemd/system/socks5-dpi-proxy.service
+```
+
+```ini
+[Unit]
+Description=SOCKS5 DPI Proxy
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+ExecStart=/usr/local/bin/socks5-dpi-proxy -config /etc/socks5-dpi-proxy/config.yaml
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# Активация сервиса
+sudo systemctl daemon-reload
+sudo systemctl enable socks5-dpi-proxy
+sudo systemctl start socks5-dpi-proxy
+
+# Проверка статуса
+sudo systemctl status socks5-dpi-proxy
+```
+
+---
+
+### 2. Docker развертывание
+
+#### Сборка Docker образа:
+```bash
+# Клонирование репозитория
+git clone https://github.com/your-repo/socks5-dpi-proxy.git
+cd socks5-dpi-proxy
+
+# Сборка образа
+docker build -t socks5-dpi-proxy:latest .
+
+# Проверка образа
+docker images | grep socks5-dpi-proxy
+```
+
+#### Запуск контейнера:
+```bash
+# Базовый запуск
+docker run -d \
+  --name socks5-dpi-proxy \
+  -p 1080:1080 \
+  -v $(pwd)/configs:/app/configs:ro \
+  -v $(pwd)/logs:/app/logs \
+  socks5-dpi-proxy:latest
+
+# Запуск с ограничениями ресурсов
+docker run -d \
+  --name socks5-dpi-proxy \
+  --cpus="2.0" \
+  --memory="4g" \
+  -p 1080:1080 \
+  -v $(pwd)/configs:/app/configs:ro \
+  -v $(pwd)/logs:/app/logs \
+  --restart unless-stopped \
+  socks5-dpi-proxy:latest
+```
+
+#### Docker Compose развертывание:
+```bash
+# Использование готового docker-compose.yml
+docker-compose up -d
+
+# Проверка статуса
+docker-compose ps
+
+# Просмотр логов
+docker-compose logs -f socks5-proxy
+
+# Остановка
+docker-compose down
+```
+
+---
+
+## 🚨 Быстрый старт для продакшена
 
 ### 1. Запуск прокси
 
 ```bash
 # Прямой запуск
-./bin/proxy -listen :1080 -config configs/proxy.yaml
+./socks5-dpi-proxy -listen :1080 -config configs/proxy.yaml
 
 # В фоновом режиме
 nohup ./bin/proxy -listen :1080 -config configs/proxy.yaml > logs/proxy.log 2>&1 &

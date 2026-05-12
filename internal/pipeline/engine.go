@@ -33,6 +33,14 @@ type Pipeline struct {
 	port      uint16
 }
 
+// PipelineV2 is an enhanced pipeline with ModifierV2 support
+type PipelineV2 struct {
+	modifiers []ModifierV2
+	target    string
+	port      uint16
+	config    *ConnectionConfig
+}
+
 type Engine struct {
 	rules     []*Rule
 	modifiers map[string]Modifier
@@ -152,6 +160,78 @@ func (p *Pipeline) processData(data []byte, direction Direction) []byte {
 		result = modifier.Process(result, direction)
 	}
 	return result
+}
+
+// ProcessOutboundV2 processes outbound data through PipelineV2
+func (p *PipelineV2) ProcessOutboundV2(data []byte) []byte {
+	return p.processDataV2(data, DirectionOutbound)
+}
+
+// ProcessInboundV2 processes inbound data through PipelineV2
+func (p *PipelineV2) ProcessInboundV2(data []byte) []byte {
+	return p.processDataV2(data, DirectionInbound)
+}
+
+// ProcessToChunksV2 processes data and returns chunks for network-level fragmentation
+func (p *PipelineV2) ProcessToChunksV2(data []byte, direction Direction) [][]byte {
+	result := data
+
+	// Process through all modifiers
+	for _, modifier := range p.modifiers {
+		if modifier.SupportsFragmentation() {
+			// Use chunk processing for fragmenting modifiers
+			chunks := modifier.ProcessToChunks(result, direction)
+
+			// For now, return chunks from the first fragmenting modifier
+			// In the future, we could chain multiple fragmenting modifiers
+			return chunks
+		} else {
+			// Use legacy processing for non-fragmenting modifiers
+			result = modifier.Process(result, direction)
+		}
+	}
+
+	// No fragmenting modifier found, return single chunk
+	return [][]byte{result}
+}
+
+// processDataV2 processes data through V2 pipeline
+func (p *PipelineV2) processDataV2(data []byte, direction Direction) []byte {
+	result := data
+
+	for _, modifier := range p.modifiers {
+		result = modifier.Process(result, direction)
+	}
+
+	return result
+}
+
+// GetFragmentingModifiers returns all modifiers that support fragmentation
+func (p *PipelineV2) GetFragmentingModifiers() []ModifierV2 {
+	var fragmenting []ModifierV2
+
+	for _, modifier := range p.modifiers {
+		if modifier.SupportsFragmentation() {
+			fragmenting = append(fragmenting, modifier)
+		}
+	}
+
+	return fragmenting
+}
+
+// HasFragmentingModifiers checks if pipeline has any fragmenting modifiers
+func (p *PipelineV2) HasFragmentingModifiers() bool {
+	return len(p.GetFragmentingModifiers()) > 0
+}
+
+// SetConfig updates pipeline configuration
+func (p *PipelineV2) SetConfig(config *ConnectionConfig) {
+	p.config = config
+}
+
+// GetConfig returns current pipeline configuration
+func (p *PipelineV2) GetConfig() *ConnectionConfig {
+	return p.config
 }
 
 func (p *Pipeline) PreConnection(req *SOCKS5Request) *SOCKS5Request {

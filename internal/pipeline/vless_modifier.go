@@ -74,40 +74,25 @@ func (v *VLESSModifier) Configure(config map[string]interface{}) error {
 	return nil
 }
 
-// Process processes data through VLESS tunnel
+// Process processes data using VLESS protocol
 func (v *VLESSModifier) Process(data []byte, direction Direction) []byte {
-	v.mu.Lock()
-	defer v.mu.Unlock()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
-	// Only process outbound traffic
-	if direction == DirectionInbound {
-		return data
-	}
-
-	// Connect if not connected
-	if v.conn == nil || !v.conn.isConnected() {
-		if err := v.connect(); err != nil {
-			// Return original data if connection fails
-			return data
+	// Create VLESS packet
+	if direction == DirectionOutbound {
+		result, err := v.processOutbound(data)
+		if err != nil {
+			return data // Return original on error
 		}
-	}
-
-	// Send data through VLESS tunnel
-	if err := v.sendData(data); err != nil {
-		// Try to reconnect and send again
-		v.disconnect()
-		if err := v.connect(); err != nil {
-			return data
+		return result
+	} else {
+		result, err := v.processInbound(data)
+		if err != nil {
+			return data // Return original on error
 		}
-		if err := v.sendData(data); err != nil {
-			return data
-		}
+		return result
 	}
-
-	// For now, pass data through without modification
-	// In a full VLESS implementation, this would handle tunneling
-	// For basic functionality, return original data to allow HTTP requests to work
-	return data
 }
 
 // connect establishes VLESS connection

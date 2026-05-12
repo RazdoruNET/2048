@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { apiClient, type RequestLog } from '../api/client';
 import { Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
+import RequestDetailsModal from './RequestDetailsModal';
+import { apiClient, type RequestLog } from '../api/client';
 
 interface RequestsListProps {
   limit?: number;
@@ -16,6 +17,8 @@ export const RequestsList: React.FC<RequestsListProps> = ({
   const [requests, setRequests] = useState<RequestLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -191,8 +194,8 @@ export const RequestsList: React.FC<RequestsListProps> = ({
               <td className="py-3 px-4">
                 <button
                   onClick={() => {
-                    // TODO: Show request details modal
-                    console.log('Show details for request:', request.request_id);
+                    setSelectedRequest(request.request_id);
+                    setIsModalOpen(true);
                   }}
                   className="p-1 hover:bg-gray-100 rounded"
                   title="View Details"
@@ -204,6 +207,16 @@ export const RequestsList: React.FC<RequestsListProps> = ({
           ))}
         </tbody>
       </table>
+    
+    {/* Request Details Modal */}
+    <RequestDetailsModal
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false);
+        setSelectedRequest(null);
+      }}
+      requestId={selectedRequest || ''}
+    />
     </div>
   );
 };
