@@ -93,7 +93,7 @@
 ```bash
 # Клонировать репозиторий
 git clone <repository-url>
-cd socks5-dpi-proxy
+cd 2048
 
 # Собрать проект
 go build ./cmd/main.go
