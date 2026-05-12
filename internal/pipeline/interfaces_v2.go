@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// ModifierV2 extends the original Modifier interface with fragmentation support
+// ModifierV2 extends Modifier interface with fragmentation support
 type ModifierV2 interface {
 	Modifier
 	// ProcessToChunks processes data and returns chunks for network-level fragmentation
@@ -15,6 +15,21 @@ type ModifierV2 interface {
 	// SupportsFragmentation indicates if this modifier can fragment data
 	SupportsFragmentation() bool
 }
+
+// IMPORTANT: Process() behavior for fragmenting modifiers
+//
+// For modifiers that support fragmentation (SupportsFragmentation() == true):
+// - Process() should be a NO-OP for outbound traffic
+// - Process() should return data unchanged for outbound DirectionOutbound
+// - Process() can return processed data for inbound DirectionInbound
+// - Real fragmentation happens via ProcessToChunks() in ModifiedConnectionV2
+//
+// For non-fragmenting modifiers (SupportsFragmentation() == false):
+// - Process() works normally, processing and returning modified data
+// - ProcessToChunks() returns single chunk with processed data
+//
+// This architecture ensures that fragmenting modifiers create separate TCP packets
+// instead of reassembled data that defeats DPI bypass.
 
 // FragmentingModifier is a specialized interface for modifiers that implement fragmentation
 type FragmentingModifier interface {

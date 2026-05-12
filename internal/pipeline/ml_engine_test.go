@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -284,22 +285,18 @@ func TestAdaptiveFragmentationModifier_Process(t *testing.T) {
 
 	data := []byte("This is a test message that should be fragmented into multiple pieces")
 
-	// Test outbound fragmentation
+	// Test outbound fragmentation - Process() should be NO-OP for fragmenting modifiers
 	result := modifier.Process(data, DirectionOutbound)
 
-	if len(result) == 0 {
-		t.Error("Expected fragmented data")
-	}
-
-	// For adaptive fragmentation, result might be same length but should be processed
-	if len(result) == 0 {
-		t.Error("Expected some result data")
+	// Process() should return original data for fragmenting modifiers (NO-OP behavior)
+	if !bytes.Equal(result, data) {
+		t.Errorf("Process() should return original data for fragmenting modifiers, got %d bytes vs %d expected", len(result), len(data))
 	}
 
 	// Test inbound (should return original)
 	result = modifier.Process(data, DirectionInbound)
 
-	if len(result) != len(data) {
+	if !bytes.Equal(result, data) {
 		t.Error("Expected original data for inbound direction")
 	}
 

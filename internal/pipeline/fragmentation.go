@@ -77,25 +77,17 @@ func (f *FragmentationModifier) Configure(config map[string]interface{}) error {
 }
 
 func (f *FragmentationModifier) Process(data []byte, direction Direction) []byte {
-	if len(data) <= f.MinSize {
+	// Process() should NOT reassemble chunks for fragmenting modifiers
+	// This prevents fragmentation from being undone at the network level
+	
+	// For non-fragmenting cases, return data as-is
+	if len(data) <= f.MinSize || direction == DirectionInbound {
 		return data
 	}
-
-	// For inbound traffic, we don't fragment
-	if direction == DirectionInbound {
-		return data
-	}
-
-	// Fragment outbound traffic
-	chunks := f.ProcessToChunks(data, direction)
-
-	// Reconstruct for legacy interface compatibility
-	var result []byte
-	for _, chunk := range chunks {
-		result = append(result, chunk...)
-	}
-
-	return result
+	
+	// For fragmenting modifiers, Process() should be a no-op
+	// Real fragmentation happens via ProcessToChunks() in ModifiedConnectionV2
+	return data
 }
 
 // ProcessToChunks implements ModifierV2 interface
