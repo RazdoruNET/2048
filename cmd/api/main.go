@@ -79,6 +79,21 @@ func main() {
 	wsHandler := handlers.NewWebSocketHandler()
 	healthHandler := handlers.NewHealthHandler(healthMonitor)
 
+	// Initialize demo data generator
+	demoGenerator := handlers.NewDemoDataGenerator(storage, wsHandler)
+
+	// Generate initial demo data
+	log.Println("Generating demo data...")
+	if err := demoGenerator.GenerateDemoData(); err != nil {
+		log.Printf("Failed to generate demo data: %v", err)
+	} else {
+		log.Println("Demo data generated successfully")
+	}
+
+	// Start continuous demo data generation
+	demoGenerator.StartContinuousDemo()
+	log.Println("Started continuous demo data generation")
+
 	// Setup Gin router
 	router := gin.New()
 
