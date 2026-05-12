@@ -1,51 +1,147 @@
-# SOCKS5 DPI Proxy System - Production Ready
+# SOCKS5 DPI Proxy System - Work in Progress
 
-� **PRODUCTION READY** - Advanced SOCKS5 proxy with comprehensive DPI evasion, ML optimization, and distributed architecture.
+🚧 **DEVELOPMENT VERSION** - Advanced SOCKS5 proxy with comprehensive DPI evasion, ML optimization, and distributed architecture.
 
 ## 📋 Project Status
 
-**Version**: 1.0.0  
-**Status**: Production Ready with Minor TODOs  
+**Version**: 0.2.0-dev  
+**Status**: Active Development - Critical DPI Bypass Fix in Progress  
 **Last Updated**: 2026-05-12  
-**Completion**: 90%
+**Completion**: 60%
+
+### Current Focus: DPI Bypass Fix Implementation
+🔥 **CRITICAL ISSUE**: Fragmentation-based DPI bypass is not working due to architectural problems in ModifiedConnection.Write. All fragments are being combined into a single TCP packet, making DPI bypass ineffective.
 
 ### Component Status
 - ✅ SOCKS5 Proxy Core
-- ✅ DPI Evasion Engine  
+- 🚨 DPI Evasion Engine (Critical fragmentation bug)
 - ✅ Performance Optimization
 - ✅ Distributed Architecture
 - ✅ Web Dashboard
 - 🟡 ML Engine (6 TODO items)
 - 🟡 VLESS Protocol (1 TODO item)
 
-### Current Limitations
-- **DPI Bypass**: 95% success rate (may drop to 85% with pipeline retry TODO)
-- **ML Features**: Limited by 6 TODO items affecting status and learning
-- **Protocol Coverage**: 90% (VLESS partially implemented)
-- **User Experience**: Minor UX limitations in request inspection
+### Critical Limitations
+- **DPI Bypass via Fragmentation**: 0% success rate (completely broken)
+- **DPI Bypass Overall**: Limited to non-fragmentation techniques only
+- **Architecture**: Requires major refactoring of modifier interfaces
+- **Thread Safety**: Issues with rand.Rand usage in modifiers
 
 ## 🚀 Project Overview
 
-This is a production-ready implementation of a modern SOCKS5 proxy system designed to bypass DPI (Deep Packet Inspection) systems with advanced techniques including behavioral evasion, performance optimization, and distributed architecture.
+This is a work-in-progress implementation of a modern SOCKS5 proxy system designed to bypass DPI (Deep Packet Inspection) systems with advanced techniques including behavioral evasion, performance optimization, and distributed architecture.
 
-### ✅ Implementation Status:
+### ⚠️ Implementation Status:
 - **Core Functionality**: ✅ Complete
-- **DPI Evasion**: ✅ Complete  
+- **DPI Evasion**: 🚨 **BROKEN** - Critical fragmentation architecture issue  
 - **ML Optimization**: 🟡 Partial (6 TODO items)
 - **Performance**: ✅ Complete
 - **Documentation**: ✅ Complete
 - **Testing**: ✅ Complete
 
-**Overall Completion**: 90% - Ready for production with known limitations
+**Overall Completion**: 60% - **NOT PRODUCTION READY**
+
+## 🚨 DPI Bypass Fix Implementation Plan
+
+This plan details the critical fix needed for the DPI bypass system where fragmentation is not working at the network level due to incorrect architecture in ModifiedConnection.Write.
+
+### The Problem
+Current architecture in `retry.go:462-463` performs ONE call to `Conn.Write(modified)` after processing data through the modifier, causing all fragments to be combined into a single MTU packet at the TCP stack level. DPI sees the original packet → bypass fails.
+
+### The Solution
+Transition from `Modifier.Process([]byte) []byte` to `ModifierV2.ProcessToChunks([]byte) [][]byte` with multiple Write calls and anti-Nagle delays.
+
+### Phase 1: Critical Architecture (Priority: CRITICAL)
+**1.1 New Interface Creation**
+- File: `internal/pipeline/interfaces_v2.go`
+- Create `ModifierV2` interface with `ProcessToChunks()`
+- Create `FragmentingModifier` interface
+- Create `LegacyModifierWrapper` for backward compatibility
+- Add `SupportsFragmentation()` method
+
+**1.2 Fix AdaptiveFragmentationModifier**
+- File: `adaptive_fragmentation.go`
+- Fix bug: `start = i * size` → `start = offset`
+- Implement `ProcessToChunks()` with correct logic
+- Add validation `MinSize <= MaxSize`
+- Replace `rand.Rand` with thread-safe `crypto/rand`
+
+**1.3 Modernize FragmentationModifier**
+- File: `fragmentation.go`
+- Implement `ProcessToChunks()` with independent chunk creation
+- Add thread-safe random number generator
+- Implement `SupportsFragmentation() = true`
+
+**1.4 Create ModifiedConnectionV2**
+- File: `internal/pipeline/connection_v2.go`
+- Key logic: `writeFragmented()` with multiple Write calls
+- Anti-Nagle delays between fragments
+- Backward compatibility with legacy modifiers
+- Configurable delay via ConnectionConfig
+
+### Phase 2: Modifier Migration (Priority: HIGH)
+**2.1 Fragmenting Modifiers**
+- AdaptiveFragmentationModifier → ModifierV2 (Phase 1)
+- FragmentationModifier → ModifierV2 (Phase 1)
+- Verify: correct `ProcessToChunks()` operation
+
+**2.2 Non-fragmenting Modifiers (Backward Compatibility)**
+- HeadersModifier → LegacyModifierWrapper
+- EncryptionModifier → LegacyModifierWrapper
+- ProtocolMaskModifier → LegacyModifierWrapper
+- BehavioralEvasionModifier → LegacyModifierWrapper
+- VLESSModifier → LegacyModifierWrapper
+- TUICModifier → LegacyModifierWrapper
+- Hysteria2Modifier → LegacyModifierWrapper
+
+**2.3 Update Modifier Factory**
+- File: `rules.go`
+- Update `createModifier()` for ModifierV2 support
+- Add automatic modifier type detection
+- Maintain backward compatibility
+
+### Phase 3: Pipeline Integration (Priority: HIGH)
+**3.1 Update Pipeline**
+- File: `engine.go`
+- Create `PipelineV2` with `[]ModifierV2`
+- Update `processData()` for fragmentation processing
+- Add `PipelineConfig` with delay settings
+
+**3.2 Update Engine**
+- `CreatePipelineV2()` method
+- Automatic migration `[]Modifier` → `[]ModifierV2`
+- Configure anti-Nagle parameters
+
+**3.3 Connection Pool Integration**
+- File: `connection_pool.go`
+- Update `PooledConnection` for ModifiedConnectionV2 support
+- Maintain pooling performance
+
+### Critical Execution Path
+Phase 1.1 → Phase 1.2 → Phase 1.4 (basic architecture) → Phase 2.1 (fragmenting modifier migration) → Phase 3.1 → Phase 3.2 (pipeline integration) → Phase 5.1 → Phase 5.2 (testing)
+
+### Expected Results
+**Before Fix:**
+- DPI bypass via fragmentation: 0% (not working)
+- Thread safety: issues with rand.Rand
+- Validation: missing
+
+**After Fix:**
+- DPI bypass via fragmentation: 85-95%
+- Thread safety: complete
+- Configuration validation: complete
+- Backward compatibility: 100%
+- ML optimization: available
 
 ## 🎯 Key Features
 
-### Advanced DPI Evasion
+### Advanced DPI Evasion (Currently Broken)
 - **Behavioral Evasion 2.0**: ML-powered traffic pattern analysis and adaptation
 - **Protocol Obfuscation**: Neural network-based traffic transformation
 - **Fingerprinting Protection**: Dynamic TLS/HTTP fingerprint rotation
 - **Real-time Adaptation**: Learning from DPI responses in real-time
 - **Timing Engine**: Human-like connection patterns and delays
+- **🚨 Fragmentation**: **CURRENTLY BROKEN** - See fix plan above
 
 ### Modern Protocol Support
 - **VLESS Reality**: 🟡 Partial implementation (TODO: tunneling)
@@ -79,15 +175,21 @@ This is a production-ready implementation of a modern SOCKS5 proxy system design
 - **Health Monitoring**: Real-time system health checks
 - **Metrics Collection**: Prometheus-compatible metrics
 
-## 📊 Performance Metrics
+## 📊 Current Performance Metrics
 
 - **Scalability**: 10,000+ concurrent connections
 - **Latency**: < 20ms average response time
 - **Throughput**: 1+ Gbps data transfer
 - **Availability**: 99.9% uptime with automatic failover
-- **DPI Bypass Success**: 95%+ success rate against modern DPI systems
+- **🚨 DPI Bypass Success**: **0% via fragmentation** (completely broken)
+- **DPI Bypass Success**: Limited to non-fragmentation techniques only
 - **Memory Usage**: < 150MB for 1000 connections (with ML components)
+- **ML Optimization**: Limited by broken fragmentation architecture
+
+### Expected Performance After Fix
+- **DPI Bypass Success**: 85-95% via fragmentation
 - **ML Optimization**: Up to 40% improvement in bypass success
+- **Thread Safety**: Complete elimination of race conditions
 
 ## 🛠️ Quick Start
 
@@ -247,18 +349,27 @@ The project is production-ready but has minor TODOs. For contributions:
 
 MIT License - see LICENSE file for details
 
-## 🎉 Project Status
+## 🚨 Project Status
 
-**PRODUCTION READY** ✅ - 90% complete with 6 minor TODO items.
+**DEVELOPMENT VERSION** ⚠️ - 60% complete with CRITICAL DPI bypass issue.
 
-The system is production-ready with:
-- 95%+ DPI bypass success rate (may drop to 85% with pipeline retry TODO)
-- Enterprise-grade performance
-- High availability and fault tolerance
-- Comprehensive monitoring and alerting
-- Automated deployment and testing
+The system is **NOT PRODUCTION READY** due to:
+- **0% DPI bypass success via fragmentation** (completely broken)
+- Critical architecture issues requiring major refactoring
+- Thread safety problems with random number generation
+- Missing validation and error handling
 
-**Ready for production deployment with known limitations!** 🚀
+**DO NOT DEPLOY TO PRODUCTION** 🛑
+
+### Development Roadmap
+1. **Phase 1**: Fix fragmentation architecture (CRITICAL)
+2. **Phase 2**: Migrate modifiers to new interface (HIGH)
+3. **Phase 3**: Integrate with pipeline system (HIGH)
+4. **Phase 4**: Comprehensive testing (HIGH)
+5. **Phase 5**: ML integration and optimization (LOW)
+
+### Contributing
+This is an active development project. See the DPI Bypass Fix Implementation Plan above for priority areas. Contributors should focus on the critical fragmentation fix first.
 - Future-proof: Готовность к современным сетевым стандартам
 
 ### ML-Resistant техники
