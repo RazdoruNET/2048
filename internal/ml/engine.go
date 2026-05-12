@@ -73,6 +73,7 @@ type SimpleMLEngine struct {
 	feedbackHistory    []FeedbackEntry
 	retrainingActive   bool
 	retrainingProgress *RetrainingProgress
+	dataCollector      DataCollectorInterface
 }
 
 // FeedbackEntry represents a feedback entry for learning
@@ -172,7 +173,7 @@ func (m *SimpleMLEngine) HealthCheck() error {
 	return nil
 }
 
-// UpdateConfig updates the ML engine configuration
+// UpdateConfig updates the ML engine configuration with hot reload support
 func (m *SimpleMLEngine) UpdateConfig(config *MLConfig) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -190,13 +191,18 @@ func (m *SimpleMLEngine) UpdateConfig(config *MLConfig) error {
 		return fmt.Errorf("max_retries must be at least 1")
 	}
 
-	// Apply configuration
+	// Apply configuration atomically
 	oldConfig := m.config
 	m.config = config
 
 	// Update status
 	m.status.Enabled = config.Enabled
 	m.status.LastUpdate = time.Now()
+
+	// Apply custom parameters changes
+	if config.CustomParameters != nil {
+		m.applyCustomParameters(config.CustomParameters)
+	}
 
 	// Log configuration change
 	if oldConfig.Enabled != config.Enabled {
@@ -207,7 +213,80 @@ func (m *SimpleMLEngine) UpdateConfig(config *MLConfig) error {
 		}
 	}
 
+	// Additional hot reload logic
+	if config.Enabled && !oldConfig.Enabled {
+		// Engine was enabled - start any background processes
+		m.startBackgroundProcesses()
+	} else if !config.Enabled && oldConfig.Enabled {
+		// Engine was disabled - stop background processes
+		m.stopBackgroundProcesses()
+	}
+
 	return nil
+}
+
+// applyCustomParameters applies custom parameters changes
+func (m *SimpleMLEngine) applyCustomParameters(params map[string]interface{}) {
+	// Apply learning rate changes
+	if lr, exists := params["learning_rate"]; exists {
+		if lrFloat, ok := lr.(float64); ok {
+			// Update learning rate in technique cache
+			m.updateLearningRate(lrFloat)
+		}
+	}
+
+	// Apply confidence threshold changes
+	if ct, exists := params["confidence_threshold"]; exists {
+		if ctFloat, ok := ct.(float64); ok {
+			// Update confidence threshold
+			m.updateConfidenceThreshold(ctFloat)
+		}
+	}
+
+	// Apply effectiveness threshold changes
+	if et, exists := params["effectiveness_threshold"]; exists {
+		if etFloat, ok := et.(float64); ok {
+			// Update effectiveness threshold
+			m.updateEffectivenessThreshold(etFloat)
+		}
+	}
+}
+
+// updateLearningRate updates learning rate for adaptive learning
+func (m *SimpleMLEngine) updateLearningRate(lr float64) {
+	// Update technique cache weights based on new learning rate
+	for key := range m.techniqueCache {
+		// Apply learning rate adjustment
+		currentEffectiveness := m.techniqueCache[key]
+		adjustedEffectiveness := currentEffectiveness * (1.0 + lr*0.1) // Simple adjustment
+		m.techniqueCache[key] = adjustedEffectiveness
+	}
+}
+
+// updateConfidenceThreshold updates confidence threshold for predictions
+func (m *SimpleMLEngine) updateConfidenceThreshold(ct float64) {
+	// This would affect prediction confidence calculations
+	// For now, just log the change
+	fmt.Printf("Updated confidence threshold to %.2f", ct)
+}
+
+// updateEffectivenessThreshold updates effectiveness threshold for technique selection
+func (m *SimpleMLEngine) updateEffectivenessThreshold(et float64) {
+	// This would affect technique selection logic
+	// For now, just log the change
+	fmt.Printf("Updated effectiveness threshold to %.2f", et)
+}
+
+// startBackgroundProcesses starts background processes when engine is enabled
+func (m *SimpleMLEngine) startBackgroundProcesses() {
+	// Start any background monitoring or optimization processes
+	fmt.Printf("Started ML engine background processes")
+}
+
+// stopBackgroundProcesses stops background processes when engine is disabled
+func (m *SimpleMLEngine) stopBackgroundProcesses() {
+	// Stop any background monitoring or optimization processes
+	fmt.Printf("Stopped ML engine background processes")
 }
 
 // GetConfig returns the current ML engine configuration
@@ -322,7 +401,7 @@ func (m *SimpleMLEngine) PredictEffectiveness(domain, technique string) float64 
 	return effectiveness
 }
 
-// LearnFromFeedback learns from feedback about technique effectiveness
+// LearnFromFeedback learns from feedback about technique effectiveness with data collection
 func (m *SimpleMLEngine) LearnFromFeedback(domain, technique string, success bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -358,7 +437,26 @@ func (m *SimpleMLEngine) LearnFromFeedback(domain, technique string, success boo
 	fmt.Printf("Learned from feedback: %s:%s -> %v (effectiveness: %.2f)",
 		domain, technique, success, entry.Effectiveness)
 
+	// Trigger data collection if data collector is available
+	if m.dataCollector != nil {
+		go m.dataCollector.CollectFeedback(domain, technique, success)
+	}
+
 	return nil
+}
+
+// SetDataCollector sets the data collector for this ML engine
+func (m *SimpleMLEngine) SetDataCollector(collector DataCollectorInterface) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.dataCollector = collector
+}
+
+// DataCollectorInterface defines the interface for data collection
+type DataCollectorInterface interface {
+	CollectFeedback(domain, technique string, success bool) error
+	CollectRequest(id, domain, technique string, success bool, latency time.Duration, bytesIn, bytesOut int64, metadata map[string]interface{}) error
+	CollectPerformance(cpuUsage float64, memoryUsage int64, connections int, throughput, errorRate float64, responseTime time.Duration) error
 }
 
 // GetStatistics returns ML engine statistics

@@ -283,6 +283,23 @@ func (h *MLHandler) UpdateConfig(c *gin.Context) {
 		return
 	}
 
+	// Validate configuration
+	validator := ml.NewConfigValidator()
+	validationResult := validator.ValidateConfigRequest(ml.MLConfigRequest{
+		LearningRate:           req.LearningRate,
+		ConfidenceThreshold:    req.ConfidenceThreshold,
+		ModelUpdateInterval:    req.ModelUpdateInterval,
+		EffectivenessThreshold: req.EffectivenessThreshold,
+	})
+
+	if !validationResult.Valid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":             "Configuration validation failed",
+			"validation_errors": validationResult.Errors,
+		})
+		return
+	}
+
 	// Create ML config from request
 	config := &ml.MLConfig{
 		Enabled:        true, // Default to enabled
@@ -296,6 +313,16 @@ func (h *MLHandler) UpdateConfig(c *gin.Context) {
 		},
 	}
 
+	// Validate full config
+	fullValidationResult := validator.ValidateConfig(config)
+	if !fullValidationResult.Valid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":             "Full configuration validation failed",
+			"validation_errors": fullValidationResult.Errors,
+		})
+		return
+	}
+
 	// Update ML engine configuration
 	err := h.mlEngine.UpdateConfig(config)
 	if err != nil {
@@ -307,8 +334,9 @@ func (h *MLHandler) UpdateConfig(c *gin.Context) {
 	updatedConfig := h.mlEngine.GetConfig()
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Configuration updated successfully",
-		"config":  updatedConfig,
+		"message":    "Configuration updated successfully",
+		"config":     updatedConfig,
+		"validation": validationResult,
 	})
 }
 
