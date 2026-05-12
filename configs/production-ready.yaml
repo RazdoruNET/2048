@@ -1,0 +1,149 @@
+# Production-Ready Configuration
+# This configuration uses only fully implemented features
+# Updated: 2026-05-12
+
+listen: ":1080"
+log_level: "info"
+
+# Production rules using only working features
+rules:
+  # Direct connection for trusted domains (no DPI bypass needed)
+  - domain: "*.github.com"
+    pipeline: {}
+  
+  - domain: "*.gitlab.com"
+    pipeline: {}
+  
+  - domain: "*.stackoverflow.com"
+    pipeline: {}
+
+  # Social media - using working DPI bypass techniques
+  - domain: "*.facebook.com"
+    pipeline:
+      fragmentation:
+        min_size: 50
+        max_size: 150
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+        add_junk_headers: true
+        user_agents:
+          - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+      encryption:
+        type: "chacha20poly1305"
+        key: "facebook_secure_key_2026"
+
+  - domain: "*.instagram.com"
+    pipeline:
+      fragmentation:
+        min_size: 64
+        max_size: 128
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "instagram_secure_key_2026"
+
+  # Video streaming - optimized for performance
+  - domain: "*.youtube.com"
+    pipeline:
+      fragmentation:
+        size: 100
+        random: false
+      protocol_mask:
+        type: "https"
+        https_noise: true
+
+  - domain: "*.twitch.tv"
+    pipeline:
+      fragmentation:
+        min_size: 80
+        max_size: 160
+        random: true
+      headers:
+        random_headers: true
+
+  # Messaging apps
+  - domain: "*.telegram.org"
+    pipeline:
+      fragmentation:
+        min_size: 40
+        max_size: 120
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+        add_junk_headers: true
+      encryption:
+        type: "chacha20poly1305"
+        key: "telegram_secure_key_2026"
+
+  # Telegram IP ranges (direct IP blocking)
+  - ip_range: "149.154.160.0/20"
+    pipeline:
+      fragmentation:
+        min_size: 50
+        max_size: 150
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+
+  - ip_range: "91.108.4.0/22"
+    pipeline:
+      fragmentation:
+        min_size: 50
+        max_size: 150
+        random: true
+      headers:
+        random_headers: true
+        modify_host: true
+
+  # News sites
+  - domain: "*.cnn.com"
+    pipeline:
+      headers:
+        random_headers: true
+        custom_headers:
+          "X-Forwarded-For": "192.168.1.100"
+          "X-Real-IP": "10.0.0.1"
+
+  - domain: "*.bbc.com"
+    pipeline:
+      headers:
+        random_headers: true
+        modify_host: true
+
+  # Search engines
+  - domain: "*.google.com"
+    pipeline: {}  # Usually accessible directly
+
+  - domain: "*.bing.com"
+    pipeline: {}  # Usually accessible directly
+
+  # Local network - encryption only
+  - ip_range: "192.168.1.0/24"
+    pipeline:
+      encryption:
+        type: "aes-gcm"
+        key: "lan_secure_key_2026"
+
+  - ip_range: "10.0.0.0/8"
+    pipeline:
+      encryption:
+        type: "aes-gcm"
+        key: "private_network_key_2026"
+
+  # Default rule for all other traffic
+  - domain: "*"
+    pipeline:
+      headers:
+        random_headers: true
+      fragmentation:
+        min_size: 64
+        max_size: 128
+        random: true
