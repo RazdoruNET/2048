@@ -98,12 +98,12 @@ func (a *AdaptiveFragmentationModifier) Configure(config map[string]interface{})
 func (a *AdaptiveFragmentationModifier) Process(data []byte, direction Direction) []byte {
 	// Process() should NOT reassemble chunks for fragmenting modifiers
 	// This prevents fragmentation from being undone at the network level
-
+	
 	// For non-fragmenting cases, return data as-is
 	if len(data) <= a.MinSize || direction == DirectionInbound {
 		return data
 	}
-
+	
 	// For fragmenting modifiers, Process() should be a no-op
 	// Real fragmentation happens via ProcessToChunks() in ModifiedConnectionV2
 	return data
@@ -112,15 +112,18 @@ func (a *AdaptiveFragmentationModifier) Process(data []byte, direction Direction
 // ProcessToChunks implements ModifierV2 interface
 func (a *AdaptiveFragmentationModifier) ProcessToChunks(data []byte, direction Direction) [][]byte {
 	start := time.Now()
-	defer func() {
-		processingTime := time.Since(start)
-		a.metrics.RecordFragmentation(len(data), len(data), processingTime, true)
-	}()
-
+	
+	// Copy configuration under read lock to avoid race conditions
+	var configCopy FragmentationConfig
+	var useML bool
+	
 	a.mu.RLock()
-	defer a.mu.RUnlock()
-
-	if len(data) <= a.MinSize {
+	configCopy = *a.config
+	useML = a.MLOptimization && a.mlEngine != nil
+	a.mu.RUnlock()
+	
+	// Process data based on copied configuration
+	if len(data) <= configCopy.MinSize {
 		return [][]byte{data}
 	}
 
@@ -130,11 +133,18 @@ func (a *AdaptiveFragmentationModifier) ProcessToChunks(data []byte, direction D
 	}
 
 	// Use ML optimization if enabled
-	if a.MLOptimization && a.mlEngine != nil {
+	if useML {
 		return a.mlFragmentation(data)
 	}
 
-	return a.adaptiveFragmentation(data)
+	// Use adaptive fragmentation with copied config
+	chunks := a.adaptiveFragmentationWithConfig(data, &configCopy)
+	
+	// Record metrics outside of lock to avoid race condition
+	processingTime := time.Since(start)
+	a.metrics.RecordFragmentation(len(data), len(data), processingTime, true)
+	
+	return chunks
 }
 
 // SupportsFragmentation implements ModifierV2 interface
@@ -170,11 +180,11 @@ func (a *AdaptiveFragmentationModifier) GetMetrics() (uint64, float64, time.Dura
 	return a.metrics.GetMetrics()
 }
 
-// adaptiveFragmentation performs adaptive fragmentation with corrected logic
-func (a *AdaptiveFragmentationModifier) adaptiveFragmentation(data []byte) [][]byte {
+// adaptiveFragmentationWithConfig performs adaptive fragmentation using provided config
+func (a *AdaptiveFragmentationModifier) adaptiveFragmentationWithConfig(data []byte, config *FragmentationConfig) [][]byte {
 	baseSize := len(data) / 3 // Default to 3 fragments
 
-	if a.RandomSizes {
+	if config.RandomSizes {
 		// Randomize around base size
 		variation := baseSize / 4
 		chunks := make([][]byte, 0, 3)
@@ -184,7 +194,7 @@ func (a *AdaptiveFragmentationModifier) adaptiveFragmentation(data []byte) [][]b
 			size := baseSize + a.rand.Intn(variation*2) - variation
 
 			// Clamp to min/max bounds
-			size = int(math.Max(float64(a.MinSize), math.Min(float64(size), float64(a.MaxSize))))
+			size = int(math.Max(float64(config.MinSize), math.Min(float64(size), float64(config.MaxSize))))
 
 			// Adjust for remaining data
 			if offset+size > len(data) {
@@ -212,7 +222,7 @@ func (a *AdaptiveFragmentationModifier) adaptiveFragmentation(data []byte) [][]b
 	for i := 0; i < 3 && offset < len(data); i++ {
 		var size int
 		if i < 2 {
-			size = a.MinSize
+			size = config.MinSize
 		} else {
 			// Last chunk gets remaining data
 			size = len(data) - offset
@@ -246,5 +256,5 @@ func (a *AdaptiveFragmentationModifier) adaptiveFragmentation(data []byte) [][]b
 func (a *AdaptiveFragmentationModifier) mlFragmentation(data []byte) [][]byte {
 	// TODO: Integrate with MLPipelineEngine
 	// For now, fall back to adaptive fragmentation
-	return a.adaptiveFragmentation(data)
+	return a.adaptiveFragmentationWithConfig(data, a.config)
 }

@@ -9,16 +9,16 @@ import (
 // ModifiedConnectionV2 wraps a connection with enhanced fragmentation support
 type ModifiedConnectionV2 struct {
 	net.Conn
-	Modifier    ModifierV2
-	Request     *SOCKS5Request
-	Config      *ConnectionConfig
-	writeStats  *WriteStats
-	mu          sync.RWMutex
+	Modifier   ModifierV2
+	Request    *SOCKS5Request
+	Config     *ConnectionConfig
+	writeStats *WriteStats
+	mu         sync.RWMutex
 }
 
 // WriteStats tracks write performance metrics
 type WriteStats struct {
-	TotalWrites     uint64        `json:"total_writes"`
+	TotalWrites      uint64        `json:"total_writes"`
 	TotalBytes       uint64        `json:"total_bytes"`
 	FragmentedWrites uint64        `json:"fragmented_writes"`
 	AverageLatency   time.Duration `json:"average_latency"`
@@ -32,7 +32,13 @@ func NewModifiedConnectionV2(conn net.Conn, modifier ModifierV2, request *SOCKS5
 	if config == nil {
 		config = DefaultConnectionConfig()
 	}
-	
+
+	// CRITICAL: Disable Nagle's algorithm to guarantee packet fragmentation
+	// This ensures each Write() call creates a separate TCP segment
+	if tcpConn, ok := conn.(*net.TCPConn); ok {
+		tcpConn.SetNoDelay(true)
+	}
+
 	return &ModifiedConnectionV2{
 		Conn:       conn,
 		Modifier:   modifier,
@@ -46,13 +52,13 @@ func NewModifiedConnectionV2(conn net.Conn, modifier ModifierV2, request *SOCKS5
 func (mc *ModifiedConnectionV2) Read(b []byte) (n int, err error) {
 	start := time.Now()
 	n, err = mc.Conn.Read(b)
-	
+
 	// Record read metrics
 	mc.writeStats.mu.Lock()
 	mc.writeStats.LastWriteTime = time.Now()
 	mc.writeStats.TotalBytes += uint64(n)
 	mc.writeStats.mu.Unlock()
-	
+
 	if err != nil {
 		return n, err
 	}
@@ -60,7 +66,7 @@ func (mc *ModifiedConnectionV2) Read(b []byte) (n int, err error) {
 	// Process inbound data
 	modified := mc.Modifier.Process(b[:n], DirectionInbound)
 	copy(b, modified)
-	
+
 	// Update latency metrics
 	latency := time.Since(start)
 	mc.writeStats.mu.Lock()
@@ -70,31 +76,31 @@ func (mc *ModifiedConnectionV2) Read(b []byte) (n int, err error) {
 		mc.writeStats.AverageLatency = latency
 	}
 	mc.writeStats.mu.Unlock()
-	
+
 	return len(modified), nil
 }
 
 // Write implements net.Conn Write method with real fragmentation support
 func (mc *ModifiedConnectionV2) Write(b []byte) (n int, err error) {
 	start := time.Now()
-	
+
 	// Choose write method based on modifier capabilities
 	if mc.Modifier.SupportsFragmentation() {
 		n, err = mc.writeFragmented(b)
 	} else {
 		n, err = mc.writeLegacy(b)
 	}
-	
+
 	// Update write statistics
 	mc.writeStats.mu.Lock()
 	mc.writeStats.TotalWrites++
 	mc.writeStats.TotalBytes += uint64(n)
 	mc.writeStats.LastWriteTime = time.Now()
-	
+
 	if err != nil {
 		mc.writeStats.ErrorCount++
 	}
-	
+
 	latency := time.Since(start)
 	if mc.writeStats.TotalWrites > 0 {
 		mc.writeStats.AverageLatency = (mc.writeStats.AverageLatency*9 + latency) / 10
@@ -102,7 +108,7 @@ func (mc *ModifiedConnectionV2) Write(b []byte) (n int, err error) {
 		mc.writeStats.AverageLatency = latency
 	}
 	mc.writeStats.mu.Unlock()
-	
+
 	return n, err
 }
 
@@ -116,14 +122,14 @@ func (mc *ModifiedConnectionV2) writeFragmented(b []byte) (int, error) {
 	} else {
 		antiNagleDelay = mc.Config.AntiNagleDelay
 	}
-	
+
 	// Process data into chunks
 	chunks := mc.Modifier.ProcessToChunks(b, DirectionOutbound)
-	
+
 	mc.writeStats.mu.Lock()
 	mc.writeStats.FragmentedWrites++
 	mc.writeStats.mu.Unlock()
-	
+
 	// Write each chunk separately to ensure network-level fragmentation
 	totalWritten := 0
 	for i, chunk := range chunks {
@@ -131,20 +137,20 @@ func (mc *ModifiedConnectionV2) writeFragmented(b []byte) (int, error) {
 		if mc.Config.WriteTimeout > 0 {
 			mc.Conn.SetWriteDeadline(time.Now().Add(mc.Config.WriteTimeout))
 		}
-		
+
 		written, err := mc.writeChunkWithRetry(chunk)
 		if err != nil {
 			return totalWritten, err
 		}
-		
+
 		totalWritten += written
-		
+
 		// Apply anti-Nagle delay between fragments (except for last chunk)
 		if i < len(chunks)-1 && antiNagleDelay > 0 {
 			time.Sleep(antiNagleDelay)
 		}
 	}
-	
+
 	return totalWritten, nil
 }
 
@@ -152,7 +158,7 @@ func (mc *ModifiedConnectionV2) writeFragmented(b []byte) (int, error) {
 func (mc *ModifiedConnectionV2) writeLegacy(b []byte) (int, error) {
 	// Process data through legacy modifier
 	modified := mc.Modifier.Process(b, DirectionOutbound)
-	
+
 	// Write processed data in a single call
 	return mc.writeChunkWithRetry(modified)
 }
@@ -161,15 +167,15 @@ func (mc *ModifiedConnectionV2) writeLegacy(b []byte) (int, error) {
 func (mc *ModifiedConnectionV2) writeChunkWithRetry(chunk []byte) (int, error) {
 	var lastErr error
 	maxRetries := mc.Config.MaxWriteRetries
-	
+
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		written, err := mc.Conn.Write(chunk)
 		if err == nil {
 			return written, nil
 		}
-		
+
 		lastErr = err
-		
+
 		// Retry on temporary errors
 		if isTemporaryError(err) && attempt < maxRetries {
 			// Exponential backoff with jitter
@@ -180,11 +186,11 @@ func (mc *ModifiedConnectionV2) writeChunkWithRetry(chunk []byte) (int, error) {
 			time.Sleep(backoff)
 			continue
 		}
-		
+
 		// Break on permanent errors or max retries exceeded
 		break
 	}
-	
+
 	return 0, lastErr
 }
 
@@ -192,7 +198,7 @@ func (mc *ModifiedConnectionV2) writeChunkWithRetry(chunk []byte) (int, error) {
 func (mc *ModifiedConnectionV2) GetWriteStats() *WriteStats {
 	mc.writeStats.mu.RLock()
 	defer mc.writeStats.mu.RUnlock()
-	
+
 	// Return a copy to prevent external modification
 	statsCopy := *mc.writeStats
 	return &statsCopy
@@ -202,7 +208,7 @@ func (mc *ModifiedConnectionV2) GetWriteStats() *WriteStats {
 func (mc *ModifiedConnectionV2) ResetStats() {
 	mc.writeStats.mu.Lock()
 	defer mc.writeStats.mu.Unlock()
-	
+
 	mc.writeStats = NewWriteStats()
 }
 
@@ -210,7 +216,7 @@ func (mc *ModifiedConnectionV2) ResetStats() {
 func (mc *ModifiedConnectionV2) SetConfig(config *ConnectionConfig) {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
-	
+
 	mc.Config = config
 }
 
@@ -218,7 +224,7 @@ func (mc *ModifiedConnectionV2) SetConfig(config *ConnectionConfig) {
 func (mc *ModifiedConnectionV2) GetModifier() ModifierV2 {
 	mc.mu.RLock()
 	defer mc.mu.RUnlock()
-	
+
 	return mc.Modifier
 }
 
@@ -226,7 +232,7 @@ func (mc *ModifiedConnectionV2) GetModifier() ModifierV2 {
 func (mc *ModifiedConnectionV2) SetModifier(modifier ModifierV2) {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
-	
+
 	mc.Modifier = modifier
 }
 
@@ -242,12 +248,12 @@ func isTemporaryError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	// Common temporary network errors
 	if netErr, ok := err.(net.Error); ok {
 		return netErr.Temporary() || netErr.Timeout()
 	}
-	
+
 	// Add more specific error patterns as needed
 	errorStr := err.Error()
 	temporaryErrors := []string{
@@ -256,24 +262,24 @@ func isTemporaryError(err error) bool {
 		"network is unreachable",
 		"no route to host",
 	}
-	
+
 	for _, tempErr := range temporaryErrors {
 		if contains(errorStr, tempErr) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // contains checks if a string contains a substring (case-insensitive)
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && 
-		   (s == substr || 
-		    (len(s) > len(substr) && 
-		     (s[:len(substr)] == substr || 
-		      s[len(s)-len(substr):] == substr ||
-		      containsMiddle(s, substr))))
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			(len(s) > len(substr) &&
+				(s[:len(substr)] == substr ||
+					s[len(s)-len(substr):] == substr ||
+					containsMiddle(s, substr))))
 }
 
 // containsMiddle checks for substring in the middle of a string
