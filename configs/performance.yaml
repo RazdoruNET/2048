@@ -1,0 +1,101 @@
+# Performance Optimization Configuration
+# Фаза 4: Connection Pooling & Performance Optimization
+
+# Connection Pool Configuration
+connection_pool:
+  max_connections: 200
+  max_idle_time: 60s
+  max_lifetime: 10m
+  health_check_interval: 15s
+  enable_metrics: true
+
+# Load Balancer Configuration
+load_balancer:
+  strategy: "weighted_round_robin"  # round_robin, weighted_round_robin, least_connections, response_time, random, hash
+  health_check_interval: 30s
+  unhealthy_threshold: 3
+  healthy_threshold: 2
+  enable_sticky_sessions: true
+  session_timeout: 5m
+  retry_attempts: 3
+
+# Performance Optimizer Configuration
+optimizer:
+  memory:
+    max_memory_mb: 1024
+    buffer_pool_size: 2000
+    cache_size: 20000
+    gc_target_percent: 50
+  cpu:
+    worker_count: 8
+    enable_affinity: true
+    max_cpu_usage: 85.0
+  io:
+    buffer_size: 131072  # 128KB
+    async_workers: 8
+    max_concurrent_io: 200
+  gc:
+    gogc: 100
+    gomemlimit: 1073741824  # 1GB
+    force_gc_interval: 30s
+  metrics_interval: 10s
+  enable_auto_tuning: true
+
+# Monitoring Configuration
+monitor:
+  enabled: true
+  metrics_interval: 10s
+  alerting_enabled: true
+  dashboard_enabled: true
+  dashboard_port: 8080
+  prometheus_enabled: true
+  prometheus_port: 9090
+
+# Integration Configuration
+integration:
+  auto_start: true
+  health_check_interval: 30s
+  metrics_aggregation: true
+  cross_component_optimization: true
+
+# Alert Rules
+alerts:
+  - name: "High Memory Usage"
+    metric: "memory.alloc_bytes"
+    condition: ">"
+    threshold: 1073741824  # 1GB
+    duration: 5m
+    severity: "warning"
+    enabled: true
+    
+  - name: "High CPU Usage"
+    metric: "cpu.goroutines"
+    condition: ">"
+    threshold: 1000
+    duration: 2m
+    severity: "critical"
+    enabled: true
+    
+  - name: "Connection Pool Exhaustion"
+    metric: "connections.active"
+    condition: ">"
+    threshold: 180
+    duration: 1m
+    severity: "critical"
+    enabled: true
+    
+  - name: "Load Balancer High Failure Rate"
+    metric: "load_balancer.failed_requests"
+    condition: ">"
+    threshold: 100
+    duration: 3m
+    severity: "warning"
+    enabled: true
+
+# Performance Targets
+targets:
+  max_latency: 50ms
+  min_throughput: 1000
+  max_error_rate: 0.01  # 1%
+  min_hit_rate: 0.8     # 80%
+  max_memory_usage: 0.8 # 80% of allocated memory

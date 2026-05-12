@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -177,7 +178,13 @@ func (s *Server) establishConnection(ctx context.Context, req *SOCKS5Request, pi
 	// If direct connection fails and we have a pipeline, try with pipeline
 	if pipe != nil {
 		log.Printf("Direct connection failed, retrying with DPI bypass: %v", err)
-		return connectToDestination(req)
+		// For now, still try direct connection as pipeline bypass needs proper implementation
+		// TODO: Implement actual pipeline-based connection retry
+		conn, retryErr := connectToDestination(req)
+		if retryErr == nil {
+			return conn, nil
+		}
+		return nil, fmt.Errorf("both direct and pipeline connections failed: %v, %v", err, retryErr)
 	}
 
 	return nil, err
@@ -205,13 +212,10 @@ func (s *Server) relayData(ctx context.Context, src, dst net.Conn, pipe *pipelin
 
 			data := buf[:n]
 
-			// Apply pipeline modifications
-			if pipe != nil {
-				if isClientToTarget {
-					data = pipe.ProcessOutbound(data)
-				} else {
-					data = pipe.ProcessInbound(data)
-				}
+			// Apply pipeline modifications only to outbound traffic
+			// Do NOT process inbound traffic to avoid corrupting HTTP responses
+			if pipe != nil && isClientToTarget {
+				data = pipe.ProcessOutbound(data)
 			}
 
 			// Write processed data

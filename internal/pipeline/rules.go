@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 )
 
 func (e *Engine) LoadConfig(configPath string) error {
-	data, err := os.ReadFile(configPath)
+	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -84,12 +85,22 @@ func (e *Engine) createModifierInstance(name string) Modifier {
 	switch name {
 	case "fragmentation":
 		return &FragmentationModifier{}
+	case "adaptive_fragmentation":
+		return &AdaptiveFragmentationModifier{}
 	case "headers":
 		return &HeadersModifier{}
 	case "encryption":
 		return &EncryptionModifier{}
 	case "protocol_mask":
 		return &ProtocolMaskModifier{}
+	case "behavioral_evasion":
+		return &BehavioralEvasionModifier{}
+	case "vless_client":
+		return NewVLESSModifier()
+	case "hysteria2_client":
+		return NewHysteria2Modifier()
+	case "tuic_client":
+		return NewTUICModifier()
 	default:
 		return nil
 	}

@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 )
@@ -243,24 +242,6 @@ func hasBehavioralPatterns(data []byte) bool {
 	return false
 }
 
-// contains checks if string contains substring (case insensitive)
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) &&
-		(s[:len(substr)] == substr ||
-			s[len(s)-len(substr):] == substr ||
-			findSubstring(s, substr))
-}
-
-// findSubstring helper function
-func findSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
-
 // MLPipelineEngine integrates ML with DPI bypass pipeline
 type MLPipelineEngine struct {
 	detector        DPIDetector
@@ -372,98 +353,4 @@ type TrafficAnalysis struct {
 	Techniques    []string
 	Effectiveness map[string]float64
 	Timestamp     time.Time
-}
-
-// AdaptiveFragmentationModifier implements ML-resistant fragmentation
-type AdaptiveFragmentationModifier struct {
-	minSize        int
-	maxSize        int
-	randomSizes    bool
-	mlEngine       *MLPipelineEngine
-	lastAdaptation time.Time
-}
-
-// NewAdaptiveFragmentationModifier creates a new adaptive fragmentation modifier
-func NewAdaptiveFragmentationModifier(minSize, maxSize int, randomSizes bool) *AdaptiveFragmentationModifier {
-	return &AdaptiveFragmentationModifier{
-		minSize:        minSize,
-		maxSize:        maxSize,
-		randomSizes:    randomSizes,
-		mlEngine:       NewMLPipelineEngine(),
-		lastAdaptation: time.Now(),
-	}
-}
-
-// Name returns the modifier name
-func (a *AdaptiveFragmentationModifier) Name() string {
-	return "adaptive_fragmentation"
-}
-
-// Configure configures the modifier
-func (a *AdaptiveFragmentationModifier) Configure(config map[string]interface{}) error {
-	if minSize, ok := config["min_size"].(int); ok {
-		a.minSize = minSize
-	}
-	if maxSize, ok := config["max_size"].(int); ok {
-		a.maxSize = maxSize
-	}
-	if randomSizes, ok := config["random"].(bool); ok {
-		a.randomSizes = randomSizes
-	}
-	return nil
-}
-
-// Process applies adaptive fragmentation
-func (a *AdaptiveFragmentationModifier) Process(data []byte, direction Direction) []byte {
-	if direction == DirectionInbound || len(data) == 0 {
-		return data
-	}
-
-	// Adapt fragment sizes based on ML analysis
-	fragmentSizes := a.getAdaptiveFragmentSizes(len(data))
-
-	var result []byte
-	for i, size := range fragmentSizes {
-		start := i * size
-		if start >= len(data) {
-			break
-		}
-
-		end := start + size
-		if end > len(data) {
-			end = len(data)
-		}
-
-		result = append(result, data[start:end]...)
-	}
-
-	return result
-}
-
-// getAdaptiveFragmentSizes calculates optimal fragment sizes
-func (a *AdaptiveFragmentationModifier) getAdaptiveFragmentSizes(dataLen int) []int {
-	// Use ML to determine optimal fragmentation
-	baseSize := dataLen / 3 // Default to 3 fragments
-
-	if a.randomSizes {
-		// Randomize around base size
-		variation := baseSize / 4
-		sizes := make([]int, 0, 3)
-
-		for i := 0; i < 3; i++ {
-			size := baseSize + rand.Intn(variation*2) - variation
-			if size < a.minSize {
-				size = a.minSize
-			}
-			if size > a.maxSize {
-				size = a.maxSize
-			}
-			sizes = append(sizes, size)
-		}
-
-		return sizes
-	}
-
-	// Fixed size fragmentation
-	return []int{a.minSize, a.minSize, dataLen - 2*a.minSize}
 }

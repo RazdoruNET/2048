@@ -1,0 +1,7 @@
+listen: ":1080"
+log_level: "info"
+
+# Simple config without DPI bypass for testing
+rules:
+  # Empty rules - no pipeline modifications applied
+  # This will test basic SOCKS5 functionality
